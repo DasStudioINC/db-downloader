@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import "./App.css";
 
@@ -22,7 +23,15 @@ function App() {
             }
 
             const data = await response.json();
-            const loadedPosts = Array.isArray(data) ? data : [];
+
+            const loadedPosts = (Array.isArray(data) ? data : []).sort(
+                (a, b) => {
+                    const dateA = new Date(a.posted_at || 0).getTime();
+                    const dateB = new Date(b.posted_at || 0).getTime();
+
+                    return dateB - dateA;
+                }
+            );
 
             setPosts(loadedPosts);
 

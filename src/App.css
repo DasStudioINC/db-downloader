@@ -1,0 +1,403 @@
+
+.app {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #0c0c0c;
+    color: #eaeaea;
+}
+
+/* HEADER */
+
+.header {
+    height: 58px;
+    min-height: 58px;
+    padding: 0 5%;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #252525;
+    background: #101010;
+}
+
+.logo {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.4px;
+}
+
+/* LAYOUT */
+
+.main-layout {
+    width: 100%;
+    max-width: 1500px;
+    min-height: 0;
+    flex: 1;
+    margin: 0 auto;
+    padding: 35px 5%;
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 55px;
+}
+
+/* REPOSITORY */
+
+.repository-panel {
+    min-height: 0;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: #171717;
+    border: 1px solid #292929;
+    border-radius: 3px;
+}
+
+.repository-panel h1 {
+    font-size: 27px;
+    font-weight: 600;
+    letter-spacing: -0.7px;
+    overflow-wrap: anywhere;
+}
+
+.panel-divider {
+    width: 30px;
+    height: 2px;
+    margin: 22px 0;
+    background: #888888;
+}
+
+.repository-panel p {
+    color: #999999;
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.repository-information {
+    display: flex;
+    flex-direction: column;
+    gap: 17px;
+    padding-top: 20px;
+    border-top: 1px solid #303030;
+}
+
+.repository-information div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.repository-information span {
+    color: #777777;
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+.repository-information strong {
+    color: #cccccc;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+/* DOWNLOADS */
+
+.downloads-section {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.downloads-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.downloads-header h2 {
+    font-size: 25px;
+    font-weight: 600;
+    letter-spacing: -0.6px;
+}
+
+.downloads-header p {
+    margin-top: 7px;
+    color: #888888;
+    font-size: 12px;
+}
+
+.refresh-button {
+    padding: 9px 13px;
+    color: #cccccc;
+    background: #171717;
+    border: 1px solid #333333;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.refresh-button:hover:not(:disabled) {
+    background: #242424;
+    color: #ffffff;
+}
+
+.refresh-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* SEARCH */
+
+.search-bar {
+    height: 40px;
+    min-height: 40px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #141414;
+    border: 1px solid #303030;
+    border-radius: 3px;
+}
+
+.search-bar input {
+    width: 100%;
+    color: #eeeeee;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 12px;
+}
+
+.search-bar input::placeholder {
+    color: #777777;
+}
+
+.search-bar button {
+    color: #999999;
+    background: none;
+    border: none;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+/* FILE LIST */
+
+.file-list-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 12px 11px;
+    color: #777777;
+    border-bottom: 1px solid #292929;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.downloads-list {
+    min-height: 0;
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #444444 transparent;
+}
+
+.file-row {
+    min-height: 70px;
+    padding: 11px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    border-bottom: 1px solid #252525;
+}
+
+.file-row:hover {
+    background: #151515;
+}
+
+.file-details {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.file-icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    color: #bbbbbb;
+    background: #202020;
+    border: 1px solid #333333;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.file-name {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.file-name strong {
+    color: #eeeeee;
+    font-size: 12px;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+.file-name span {
+    color: #777777;
+    font-size: 10px;
+}
+
+.download-button {
+    min-width: 100px;
+    padding: 9px 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #eeeeee;
+    background: #222222;
+    border: 1px solid #393939;
+    border-radius: 3px;
+    text-decoration: none;
+    font-size: 11px;
+    transition: background 0.15s, color 0.15s;
+}
+
+.download-button:hover {
+    color: #111111;
+    background: #eeeeee;
+    border-color: #eeeeee;
+}
+
+.download-button span {
+    font-size: 14px;
+}
+
+/* STATES */
+
+.message {
+    min-height: 140px;
+    padding: 30px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #888888;
+    text-align: center;
+    font-size: 12px;
+}
+
+.message strong {
+    color: #eeeeee;
+}
+
+.message p {
+    line-height: 1.6;
+}
+
+.message button {
+    padding: 8px 13px;
+    color: #eeeeee;
+    background: #222222;
+    border: 1px solid #444444;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.error {
+    color: #d58b8b;
+}
+
+/* FOOTER */
+
+.downloads-footer {
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    color: #777777;
+    border-top: 1px solid #292929;
+    font-size: 10px;
+}
+
+.footer {
+    height: 40px;
+    min-height: 40px;
+    padding: 0 5%;
+    display: flex;
+    align-items: center;
+    color: #777777;
+    background: #101010;
+    border-top: 1px solid #252525;
+    font-size: 10px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 750px) {
+    .app {
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow: visible;
+    }
+
+    .main-layout {
+        flex: none;
+        padding: 22px 5%;
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .repository-panel {
+        min-height: 240px;
+    }
+
+    .downloads-section {
+        min-height: 350px;
+    }
+
+    .downloads-list {
+        max-height: 450px;
+    }
+
+    .footer {
+        margin-top: auto;
+    }
+}
+
+@media (max-width: 450px) {
+    .downloads-header h2 {
+        font-size: 22px;
+    }
+
+    .download-button {
+        min-width: 85px;
+        padding: 9px 7px;
+        font-size: 10px;
+    }
+
+    .file-row {
+        padding: 11px 6px;
+        gap: 8px;
+    }
+
+    .file-details {
+        gap: 9px;
+    }
+}

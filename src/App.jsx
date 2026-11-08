@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-const API_URL = "http://db.yurphagames.net/api/v1/posts";
+const API_URL = "https://db.yurphagames.net/api/v1/posts";
 
 function App() {
     const [posts, setPosts] = useState([]);
@@ -62,7 +62,7 @@ function App() {
         <div className="app">
             <header className="header">
                 <a href="/" className="logo">
-                    DB Downloader
+                    DB Downloader - Download A Database From Yurpha
                 </a>
             </header>
 

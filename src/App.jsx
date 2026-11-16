@@ -3,7 +3,6 @@ import JSZip from "jszip";
 import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css";
 
-// Import common languages you want highlighted
 import "prismjs/components/prism-json";
 import "prismjs/components/prism-javascript";
 import "prismjs/components/prism-jsx";
@@ -45,31 +44,71 @@ const SOCIAL_LINKS = [
   },
 ];
 
-const EXTENSION_TO_PRISM = {
-  js: "javascript",
-  mjs: "javascript",
-  cjs: "javascript",
-  jsx: "jsx",
-  ts: "typescript",
-  tsx: "typescript",
-  json: "json",
-  css: "css",
-  html: "markup",
-  xml: "markup",
-  svg: "markup",
-  java: "java",
-  cs: "csharp",
-  py: "python",
-  sql: "sql",
-  sh: "bash",
-  bat: "bash",
-  ps1: "bash",
-  yml: "yaml",
-  yaml: "yaml",
-  md: "markdown",
-  properties: "yaml",
-  txt: "none",
+const EXTENSION_META = {
+  js: {
+    lang: "javascript",
+    label: "JavaScript",
+    color: "#f7df1e",
+    badge: "JS",
+  },
+  mjs: {
+    lang: "javascript",
+    label: "JavaScript",
+    color: "#f7df1e",
+    badge: "JS",
+  },
+  cjs: {
+    lang: "javascript",
+    label: "JavaScript",
+    color: "#f7df1e",
+    badge: "JS",
+  },
+  jsx: { lang: "jsx", label: "React JSX", color: "#61dafb", badge: "JSX" },
+  ts: {
+    lang: "typescript",
+    label: "TypeScript",
+    color: "#3178c6",
+    badge: "TS",
+  },
+  tsx: {
+    lang: "typescript",
+    label: "React TSX",
+    color: "#3178c6",
+    badge: "TSX",
+  },
+  json: { lang: "json", label: "JSON", color: "#cbcb41", badge: "{}" },
+  css: { lang: "css", label: "CSS", color: "#563d7c", badge: "#" },
+  html: { lang: "markup", label: "HTML", color: "#e34c26", badge: "<>" },
+  xml: { lang: "markup", label: "XML", color: "#f16529", badge: "<>" },
+  svg: { lang: "markup", label: "SVG", color: "#ffb13b", badge: "SVG" },
+  java: { lang: "java", label: "Java", color: "#f89820", badge: "JV" },
+  cs: { lang: "csharp", label: "C#", color: "#9b4f96", badge: "C#" },
+  py: { lang: "python", label: "Python", color: "#3572a5", badge: "PY" },
+  sql: { lang: "sql", label: "SQL", color: "#e38c00", badge: "DB" },
+  sh: { lang: "bash", label: "Shell Script", color: "#89e051", badge: "$_" },
+  bat: { lang: "bash", label: "Batch Script", color: "#c1f12e", badge: "BAT" },
+  ps1: { lang: "bash", label: "PowerShell", color: "#012456", badge: "PS" },
+  yml: { lang: "yaml", label: "YAML", color: "#cb171e", badge: "YML" },
+  yaml: { lang: "yaml", label: "YAML", color: "#cb171e", badge: "YML" },
+  md: { lang: "markdown", label: "Markdown", color: "#58a6ff", badge: "MD" },
+  properties: {
+    lang: "yaml",
+    label: "Properties",
+    color: "#8b949e",
+    badge: "CFG",
+  },
+  txt: { lang: "none", label: "Plain Text", color: "#8b949e", badge: "TXT" },
 };
+
+const IMAGE_EXTENSIONS = new Set([
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "webp",
+  "bmp",
+  "ico",
+]);
 
 const BINARY_EXTENSIONS = new Set([
   "exe",
@@ -80,13 +119,6 @@ const BINARY_EXTENSIONS = new Set([
   "dat",
   "jar",
   "class",
-  "png",
-  "jpg",
-  "jpeg",
-  "gif",
-  "webp",
-  "ico",
-  "bmp",
   "mp3",
   "wav",
   "ogg",
@@ -110,8 +142,40 @@ function getExtension(filename) {
   return parts.length > 1 ? parts.pop().toLowerCase() : "";
 }
 
+function isImageFile(filename) {
+  return IMAGE_EXTENSIONS.has(getExtension(filename));
+}
+
 function isBinaryFile(filename) {
-  return BINARY_EXTENSIONS.has(getExtension(filename));
+  const ext = getExtension(filename);
+  return BINARY_EXTENSIONS.has(ext) || IMAGE_EXTENSIONS.has(ext);
+}
+
+function getFileMeta(filename) {
+  const ext = getExtension(filename);
+  if (EXTENSION_META[ext]) return EXTENSION_META[ext];
+  if (IMAGE_EXTENSIONS.has(ext)) {
+    return {
+      lang: "none",
+      label: `${ext.toUpperCase()} Image`,
+      color: "#a371f7",
+      badge: "IMG",
+    };
+  }
+  if (BINARY_EXTENSIONS.has(ext)) {
+    return {
+      lang: "none",
+      label: `${ext.toUpperCase()} Binary`,
+      color: "#f85149",
+      badge: "BIN",
+    };
+  }
+  return {
+    lang: "none",
+    label: ext ? ext.toUpperCase() : "File",
+    color: "#8b949e",
+    badge: "DOC",
+  };
 }
 
 function formatBytes(bytes) {
@@ -121,7 +185,6 @@ function formatBytes(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
-// Builds a nested folder/file tree from flat JSZip paths
 function buildFileTree(files) {
   const root = { name: "", path: "", isDir: true, children: {} };
 
@@ -183,20 +246,30 @@ function TreeNode({
   if (node.isDir) {
     const isOpen = !!expandedDirs[node.path];
     return (
-      <div>
+      <div className="tree-branch">
         <button
           type="button"
-          className="tree-item tree-folder"
-          style={{ paddingLeft: `${12 + depth * 14}px` }}
+          className={`tree-item tree-folder ${isOpen ? "open" : ""}`}
+          style={{ paddingLeft: `${12 + depth * 15}px` }}
           onClick={() => toggleDir(node.path)}
         >
-          <span className="tree-caret">{isOpen ? "▾" : "▸"}</span>
           <svg
-            width="14"
-            height="14"
+            className={`tree-chevron ${isOpen ? "rotated" : ""}`}
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+          <svg
+            className="folder-icon"
+            width="15"
+            height="15"
             viewBox="0 0 24 24"
             fill="currentColor"
-            opacity="0.8"
           >
             <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z" />
           </svg>
@@ -219,25 +292,25 @@ function TreeNode({
   }
 
   const isSelected = selectedPath === node.path;
+  const meta = getFileMeta(node.name);
 
   return (
     <button
       type="button"
       className={`tree-item tree-file ${isSelected ? "active" : ""}`}
-      style={{ paddingLeft: `${26 + depth * 14}px` }}
+      style={{ paddingLeft: `${26 + depth * 15}px` }}
       onClick={() => onSelectFile(node.fileData)}
     >
-      <svg
-        width="13"
-        height="13"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
+      <span
+        className="file-type-pill"
+        style={{
+          color: meta.color,
+          borderColor: `${meta.color}44`,
+          backgroundColor: `${meta.color}14`,
+        }}
       >
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-      </svg>
+        {meta.badge}
+      </span>
       <span className="tree-label">{node.name}</span>
     </button>
   );
@@ -258,9 +331,11 @@ function App() {
   const [zipLoading, setZipLoading] = useState(false);
   const [zipError, setZipError] = useState("");
   const [zipFiles, setZipFiles] = useState([]);
+  const [treeFilter, setTreeFilter] = useState("");
   const [expandedDirs, setExpandedDirs] = useState({});
   const [activeFile, setActiveFile] = useState(null);
   const [fileContent, setFileContent] = useState("");
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [fileContentLoading, setFileContentLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -302,6 +377,16 @@ function App() {
     loadPosts();
   }, []);
 
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === "Escape" && viewingPost) {
+        closeViewer();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [viewingPost]);
+
   function getDownloadUrl(searchTitle) {
     return `${API_URL}/search/${encodeURIComponent(searchTitle)}/post`;
   }
@@ -311,8 +396,13 @@ function App() {
     setZipLoading(true);
     setZipError("");
     setZipFiles([]);
+    setTreeFilter("");
     setActiveFile(null);
     setFileContent("");
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl);
+      setImagePreviewUrl(null);
+    }
     setExpandedDirs({});
 
     try {
@@ -322,8 +412,54 @@ function App() {
       }
 
       const arrayBuffer = await response.arrayBuffer();
-      const zip = await JSZip.loadAsync(arrayBuffer);
+      const bytes = new Uint8Array(arrayBuffer);
 
+      const isZip =
+        bytes[0] === 0x50 &&
+        bytes[1] === 0x4b &&
+        (bytes[2] === 0x03 || bytes[2] === 0x05 || bytes[2] === 0x07);
+
+      if (!isZip) {
+        const hexHeader = Array.from(bytes.slice(0, 8))
+          .map((b) => b.toString(16).padStart(2, "0").toUpperCase())
+          .join(" ");
+
+        let detectedType = "Unknown / Plain Text";
+        if (bytes[0] === 0x52 && bytes[1] === 0x61 && bytes[2] === 0x72)
+          detectedType = "RAR Archive (.rar)";
+        else if (bytes[0] === 0x37 && bytes[1] === 0x7a)
+          detectedType = "7-Zip Archive (.7z)";
+        else if (bytes[0] === 0x1f && bytes[1] === 0x8b)
+          detectedType = "GZIP / Tarball (.gz / .tgz)";
+        else if (bytes[0] === 0x4d && bytes[1] === 0x5a)
+          detectedType = "Windows Executable (.exe)";
+
+        if (
+          arrayBuffer.byteLength < 10 * 1024 * 1024 &&
+          detectedType === "Unknown / Plain Text"
+        ) {
+          const decodedText = new TextDecoder("utf-8").decode(arrayBuffer);
+          const isJson =
+            decodedText.trim().startsWith("{") ||
+            decodedText.trim().startsWith("[");
+          const singleFile = {
+            path: `${post.postName || "file"}.${isJson ? "json" : "txt"}`,
+            isDir: false,
+            size: arrayBuffer.byteLength,
+            entry: null,
+          };
+          setZipFiles([singleFile]);
+          setActiveFile(singleFile);
+          setFileContent(decodedText);
+          return;
+        }
+
+        throw new Error(
+          `File is not a standard ZIP (${formatBytes(arrayBuffer.byteLength)} received, detected: ${detectedType}, signature: ${hexHeader}).`,
+        );
+      }
+
+      const zip = await JSZip.loadAsync(arrayBuffer);
       const entries = [];
       const initialExpanded = {};
 
@@ -335,7 +471,6 @@ function App() {
           entry: zipEntry,
         });
 
-        // Auto-expand top-level folders
         const parts = relativePath.split("/").filter(Boolean);
         if (parts.length > 1) {
           initialExpanded[parts[0]] = true;
@@ -345,7 +480,6 @@ function App() {
       setZipFiles(entries);
       setExpandedDirs(initialExpanded);
 
-      // Auto-select README or first readable text file
       const firstReadable =
         entries.find((e) => !e.isDir && /readme/i.test(e.path)) ||
         entries.find((e) => !e.isDir && !isBinaryFile(e.path)) ||
@@ -355,10 +489,7 @@ function App() {
         await selectZipFile(firstReadable);
       }
     } catch (err) {
-      setZipError(
-        err.message ||
-          "Could not read ZIP contents. Check CORS or archive format.",
-      );
+      setZipError(err.message || "Could not read ZIP contents.");
     } finally {
       setZipLoading(false);
     }
@@ -367,6 +498,24 @@ function App() {
   async function selectZipFile(fileObj) {
     setActiveFile(fileObj);
     setCopied(false);
+
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl);
+      setImagePreviewUrl(null);
+    }
+
+    if (!fileObj.entry) return;
+
+    if (isImageFile(fileObj.path)) {
+      setFileContentLoading(true);
+      try {
+        const blob = await fileObj.entry.async("blob");
+        setImagePreviewUrl(URL.createObjectURL(blob));
+      } finally {
+        setFileContentLoading(false);
+      }
+      return;
+    }
 
     if (isBinaryFile(fileObj.path)) {
       setFileContent("");
@@ -392,18 +541,32 @@ function App() {
   }
 
   function closeViewer() {
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl);
+      setImagePreviewUrl(null);
+    }
     setViewingPost(null);
     setZipFiles([]);
     setActiveFile(null);
     setFileContent("");
   }
 
+  const filteredZipFiles = useMemo(() => {
+    if (!treeFilter.trim()) return zipFiles;
+    const q = treeFilter.toLowerCase();
+    return zipFiles.filter((f) => !f.isDir && f.path.toLowerCase().includes(q));
+  }, [zipFiles, treeFilter]);
+
   const fileTree = useMemo(() => buildFileTree(zipFiles), [zipFiles]);
+
+  const activeFileMeta = useMemo(
+    () => (activeFile ? getFileMeta(activeFile.path) : null),
+    [activeFile],
+  );
 
   const highlightedLines = useMemo(() => {
     if (!activeFile || isBinaryFile(activeFile.path) || !fileContent) return [];
-    const ext = getExtension(activeFile.path);
-    const lang = EXTENSION_TO_PRISM[ext] || "none";
+    const lang = activeFileMeta?.lang || "none";
     const grammar = Prism.languages[lang];
 
     const html = grammar
@@ -414,7 +577,7 @@ function App() {
           .replace(/>/g, "&gt;");
 
     return html.split("\n");
-  }, [activeFile, fileContent]);
+  }, [activeFile, activeFileMeta, fileContent]);
 
   const filteredPosts = posts.filter((post) =>
     (post.postName || "Unnamed file")
@@ -521,10 +684,10 @@ function App() {
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
             </svg>
-            <span>View</span>
+            <span>Browse Code</span>
           </button>
 
           <a
@@ -556,6 +719,9 @@ function App() {
   const selectedIsCurrent = selectedPost
     ? (selectedPost.version || "current").toLowerCase() === "current"
     : true;
+
+  const totalFileCount = zipFiles.filter((f) => !f.isDir).length;
+  const totalFolderCount = zipFiles.filter((f) => f.isDir).length;
 
   return (
     <div className="app">
@@ -658,10 +824,10 @@ function App() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     >
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
+                      <polyline points="16 18 22 12 16 6" />
+                      <polyline points="8 6 2 12 8 18" />
                     </svg>
-                    <span>Inspect Archive Contents</span>
+                    <span>Browse Archive Files</span>
                   </button>
 
                   <a
@@ -882,14 +1048,25 @@ function App() {
         </section>
       </main>
 
-      {/* GitHub-Style ZIP Explorer Modal */}
+      {/* Upgraded GitHub-Style Code & Archive Explorer Modal */}
       {viewingPost && (
         <div className="zip-modal-backdrop" onClick={closeViewer}>
           <div className="zip-modal" onClick={(e) => e.stopPropagation()}>
             <div className="zip-modal-header">
               <div className="zip-modal-title">
-                <span className="zip-badge">ZIP INSPECTOR</span>
+                <span className="zip-badge">
+                  <span className="zip-badge-dot"></span>
+                  ARCHIVE EXPLORER
+                </span>
                 <h3>{viewingPost.postName || "Archive"}</h3>
+                {!zipLoading && !zipError && zipFiles.length > 0 && (
+                  <span className="zip-summary-pill">
+                    {totalFileCount} {totalFileCount === 1 ? "file" : "files"}
+                    {totalFolderCount > 0
+                      ? ` • ${totalFolderCount} folders`
+                      : ""}
+                  </span>
+                )}
               </div>
 
               <div className="zip-modal-actions">
@@ -897,29 +1074,61 @@ function App() {
                   className="download-button"
                   href={getDownloadUrl(viewingPost.searchTitle)}
                 >
-                  <span>Download ZIP</span>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  <span>Download Archive</span>
                 </a>
                 <button
                   type="button"
                   className="zip-close-btn"
                   onClick={closeViewer}
+                  title="Close (Esc)"
                   aria-label="Close archive viewer"
                 >
-                  ✕
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                 </button>
               </div>
             </div>
 
             {zipLoading && (
               <div className="zip-status-box">
-                <div className="spinner"></div>
-                <p>Downloading & extracting archive in browser...</p>
+                <div className="zip-loader-ring"></div>
+                <strong>Unpacking Archive Stream...</strong>
+                <p>
+                  Fetching package from db.yurphagames.net and indexing file
+                  tree
+                </p>
               </div>
             )}
 
             {!zipLoading && zipError && (
               <div className="zip-status-box error">
-                <strong>Failed to inspect archive</strong>
+                <div className="zip-error-icon">!</div>
+                <strong>Unable to Inspect Archive</strong>
                 <p>{zipError}</p>
               </div>
             )}
@@ -927,21 +1136,80 @@ function App() {
             {!zipLoading && !zipError && (
               <div className="zip-explorer-body">
                 <aside className="zip-tree-sidebar">
-                  <div className="zip-tree-header">
-                    Files ({zipFiles.filter((f) => !f.isDir).length})
+                  <div className="zip-tree-search">
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.3"
+                    >
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <input
+                      type="text"
+                      placeholder="Go to file..."
+                      value={treeFilter}
+                      onChange={(e) => setTreeFilter(e.target.value)}
+                    />
+                    {treeFilter && (
+                      <button
+                        type="button"
+                        onClick={() => setTreeFilter("")}
+                        className="zip-tree-clear"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
+
                   <div className="zip-tree-scroll">
-                    {fileTree.map((node) => (
-                      <TreeNode
-                        key={node.path}
-                        node={node}
-                        depth={0}
-                        selectedPath={activeFile?.path}
-                        expandedDirs={expandedDirs}
-                        toggleDir={toggleDir}
-                        onSelectFile={selectZipFile}
-                      />
-                    ))}
+                    {treeFilter.trim() ? (
+                      filteredZipFiles.length > 0 ? (
+                        filteredZipFiles.map((fileObj) => {
+                          const meta = getFileMeta(fileObj.path);
+                          const isSelected = activeFile?.path === fileObj.path;
+                          return (
+                            <button
+                              key={fileObj.path}
+                              type="button"
+                              className={`tree-item tree-search-result ${isSelected ? "active" : ""}`}
+                              onClick={() => selectZipFile(fileObj)}
+                            >
+                              <span
+                                className="file-type-pill"
+                                style={{
+                                  color: meta.color,
+                                  borderColor: `${meta.color}44`,
+                                  backgroundColor: `${meta.color}14`,
+                                }}
+                              >
+                                {meta.badge}
+                              </span>
+                              <span className="tree-search-path">
+                                {fileObj.path}
+                              </span>
+                            </button>
+                          );
+                        })
+                      ) : (
+                        <div className="zip-tree-empty">No matching files</div>
+                      )
+                    ) : (
+                      fileTree.map((node) => (
+                        <TreeNode
+                          key={node.path}
+                          node={node}
+                          depth={0}
+                          selectedPath={activeFile?.path}
+                          expandedDirs={expandedDirs}
+                          toggleDir={toggleDir}
+                          onSelectFile={selectZipFile}
+                        />
+                      ))
+                    )}
                   </div>
                 </aside>
 
@@ -949,41 +1217,128 @@ function App() {
                   {activeFile ? (
                     <>
                       <div className="zip-file-topbar">
-                        <div className="zip-file-path">
-                          <span>{activeFile.path}</span>
+                        <div className="zip-breadcrumbs">
+                          {activeFile.path
+                            .split("/")
+                            .map((segment, idx, arr) => (
+                              <span key={idx} className="crumb-segment">
+                                {idx > 0 && (
+                                  <span className="crumb-sep">/</span>
+                                )}
+                                <span
+                                  className={
+                                    idx === arr.length - 1
+                                      ? "crumb-file"
+                                      : "crumb-dir"
+                                  }
+                                >
+                                  {segment}
+                                </span>
+                              </span>
+                            ))}
+                        </div>
+
+                        <div className="zip-file-controls">
+                          {activeFileMeta && (
+                            <span
+                              className="zip-lang-tag"
+                              style={{ color: activeFileMeta.color }}
+                            >
+                              {activeFileMeta.label}
+                            </span>
+                          )}
+
+                          {!isBinaryFile(activeFile.path) && (
+                            <span className="zip-stat-pill">
+                              {highlightedLines.length} lines
+                            </span>
+                          )}
+
                           {activeFile.size !== null && (
-                            <span className="zip-file-size">
+                            <span className="zip-stat-pill">
                               {formatBytes(activeFile.size)}
                             </span>
                           )}
-                        </div>
 
-                        {!isBinaryFile(activeFile.path) && (
-                          <button
-                            type="button"
-                            className="zip-copy-btn"
-                            onClick={() => {
-                              navigator.clipboard.writeText(fileContent);
-                              setCopied(true);
-                              setTimeout(() => setCopied(false), 1800);
-                            }}
-                          >
-                            {copied ? "Copied!" : "Copy"}
-                          </button>
-                        )}
+                          {!isBinaryFile(activeFile.path) && (
+                            <button
+                              type="button"
+                              className={`zip-copy-btn ${copied ? "copied" : ""}`}
+                              onClick={() => {
+                                navigator.clipboard.writeText(fileContent);
+                                setCopied(true);
+                                setTimeout(() => setCopied(false), 1800);
+                              }}
+                            >
+                              {copied ? (
+                                <>
+                                  <svg
+                                    width="13"
+                                    height="13"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2.5"
+                                  >
+                                    <polyline points="20 6 9 17 4 12" />
+                                  </svg>
+                                  <span>Copied</span>
+                                </>
+                              ) : (
+                                <>
+                                  <svg
+                                    width="13"
+                                    height="13"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2.2"
+                                  >
+                                    <rect
+                                      x="9"
+                                      y="9"
+                                      width="13"
+                                      height="13"
+                                      rx="2"
+                                      ry="2"
+                                    />
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                  </svg>
+                                  <span>Copy</span>
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       <div className="zip-code-scroll">
                         {fileContentLoading ? (
-                          <div className="zip-status-box">Loading file...</div>
-                        ) : isBinaryFile(activeFile.path) ? (
                           <div className="zip-status-box">
-                            <strong>Binary File</strong>
+                            <div className="zip-loader-ring small"></div>
+                            <p>Rendering file...</p>
+                          </div>
+                        ) : imagePreviewUrl ? (
+                          <div className="zip-image-preview">
+                            <img src={imagePreviewUrl} alt={activeFile.path} />
+                          </div>
+                        ) : isBinaryFile(activeFile.path) ? (
+                          <div className="zip-binary-card">
+                            <div className="binary-badge">
+                              .{getExtension(activeFile.path).toUpperCase()}
+                            </div>
+                            <strong>Compiled / Binary Asset</strong>
                             <p>
-                              Preview not available for{" "}
-                              <code>.{getExtension(activeFile.path)}</code>{" "}
-                              files.
+                              This file contains raw binary data (
+                              {formatBytes(activeFile.size)}) and cannot be
+                              displayed as source code.
                             </p>
+                            <a
+                              className="download-button"
+                              href={getDownloadUrl(viewingPost.searchTitle)}
+                            >
+                              Download Full Archive
+                            </a>
                           </div>
                         ) : (
                           <pre className="zip-code-block">
@@ -1006,7 +1361,11 @@ function App() {
                     </>
                   ) : (
                     <div className="zip-status-box">
-                      Select a file from the left tree to view its contents.
+                      <strong>No File Selected</strong>
+                      <p>
+                        Pick any file from the left tree to inspect its
+                        contents.
+                      </p>
                     </div>
                   )}
                 </div>

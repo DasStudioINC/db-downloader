@@ -3,6 +3,13 @@ import "./App.css";
 
 const API_URL = "https://db.yurphagames.net/api/v1/posts";
 
+const SOCIAL_LINKS = [
+    { label: "YouTube (@Yurpha)", url: "https://www.youtube.com/@Yurpha" },
+    { label: "YouTube (@YurphaGames)", url: "https://www.youtube.com/@YurphaGames" },
+    { label: "GitHub", url: "https://github.com/DasStudioINC" },
+    { label: "Reddit", url: "https://www.reddit.com/r/YurphaGames/" },
+];
+
 function App() {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -113,7 +120,7 @@ function App() {
                     </div>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <div className="file-actions">
                     <span
                         className={`version-badge ${
                             isCurrent ? "current" : "deprecated"
@@ -141,6 +148,20 @@ function App() {
                 <a href="/" className="logo">
                     DB Downloader — Yurpha Games
                 </a>
+
+                <nav className="social-links" aria-label="Official links">
+                    {SOCIAL_LINKS.map((link) => (
+                        <a
+                            key={link.url}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="social-link"
+                        >
+                            {link.label}
+                        </a>
+                    ))}
+                </nav>
             </header>
 
             <main className="main-layout">
@@ -286,6 +307,19 @@ function App() {
 
             <footer className="footer">
                 <span>DB Downloader — Powered by Yurpha Games Infrastructure</span>
+
+                <div className="footer-links">
+                    {SOCIAL_LINKS.map((link) => (
+                        <a
+                            key={link.url}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            {link.label}
+                        </a>
+                    ))}
+                </div>
             </footer>
         </div>
     );

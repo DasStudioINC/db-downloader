@@ -17,6 +17,8 @@
     padding: 0 6%;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 16px;
     border-bottom: 1px solid #27272a;
     background: #121215;
     backdrop-filter: blur(8px);
@@ -31,6 +33,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    white-space: nowrap;
 }
 
 .logo::before {
@@ -40,6 +43,33 @@
     background: #3b82f6;
     border-radius: 50%;
     box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+}
+
+/* SOCIAL LINKS */
+
+.social-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.social-link {
+    padding: 6px 11px;
+    color: #a1a1aa;
+    background: #18181c;
+    border: 1px solid #27272a;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+}
+
+.social-link:hover {
+    color: #ffffff;
+    background: #27272a;
+    border-color: #3f3f46;
 }
 
 /* LAYOUT */
@@ -357,6 +387,12 @@
     font-size: 11px;
 }
 
+.file-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
 /* VERSION BADGES */
 
 .version-badge {
@@ -448,14 +484,35 @@
 }
 
 .footer {
-    height: 50px;
-    padding: 0 6%;
+    min-height: 54px;
+    padding: 12px 6%;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
     color: #71717a;
     background: #121215;
     border-top: 1px solid #27272a;
     font-size: 11px;
+}
+
+.footer-links {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    color: #a1a1aa;
+    text-decoration: none;
+    font-size: 11px;
+    transition: color 0.15s;
+}
+
+.footer-links a:hover {
+    color: #ffffff;
 }
 
 /* RESPONSIVE DESIGN */
@@ -469,5 +526,14 @@
 
     .repository-panel {
         position: static;
+    }
+}
+
+@media (max-width: 750px) {
+    .header {
+        height: auto;
+        padding: 14px 5%;
+        flex-direction: column;
+        align-items: flex-start;
     }
 }

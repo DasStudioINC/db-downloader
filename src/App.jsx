@@ -10,7 +10,6 @@ function App() {
     const [search, setSearch] = useState("");
     const [selectedPost, setSelectedPost] = useState(null);
 
-    // Collapsible group open/closed states
     const [currentOpen, setCurrentOpen] = useState(true);
     const [deprecatedOpen, setDeprecatedOpen] = useState(false);
 
@@ -62,7 +61,6 @@ function App() {
             .includes(search.toLowerCase())
     );
 
-    // Separate filtered posts into current and deprecated groups
     const currentPosts = filteredPosts.filter(
         (post) => (post.version || "current").toLowerCase() === "current"
     );
@@ -78,7 +76,6 @@ function App() {
         setSelectedPost(post);
     }
 
-    // Helper to render file rows
     const renderFileRow = (post, index) => {
         const isCurrent = (post.version || "current").toLowerCase() === "current";
 
@@ -116,7 +113,7 @@ function App() {
                     </div>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                     <span
                         className={`version-badge ${
                             isCurrent ? "current" : "deprecated"
@@ -142,7 +139,7 @@ function App() {
         <div className="app">
             <header className="header">
                 <a href="/" className="logo">
-                    DB Downloader - Download A Database From Yurpha
+                    DB Downloader — Yurpha Games
                 </a>
             </header>
 
@@ -152,7 +149,7 @@ function App() {
                         <h1>
                             {selectedPost
                                 ? selectedPost.postName || "Unnamed file"
-                                : "Download A Database From Yurpha"}
+                                : "Select a Repository"}
                         </h1>
 
                         <div className="panel-divider"></div>
@@ -160,18 +157,18 @@ function App() {
                         <p>
                             {selectedPost
                                 ? selectedPost.description || "No description available for this repository."
-                                : "Select a repository to view its description."}
+                                : "Click on any file row to view its detailed description and metadata right here."}
                         </p>
                     </div>
 
                     <div className="repository-information">
                         <div>
-                            <span>TYPE</span>
+                            <span>STORAGE TYPE</span>
                             <strong>Software Repository</strong>
                         </div>
 
                         <div>
-                            <span>AVAILABLE FILES</span>
+                            <span>TOTAL FILES</span>
                             <strong>{posts.length}</strong>
                         </div>
                     </div>
@@ -181,7 +178,7 @@ function App() {
                     <div className="downloads-header">
                         <div>
                             <h2>Downloads</h2>
-                            <p>Browse and download available files.</p>
+                            <p>Browse, search, and download active database archives.</p>
                         </div>
 
                         <button
@@ -189,14 +186,14 @@ function App() {
                             onClick={loadPosts}
                             disabled={loading}
                         >
-                            Refresh
+                            {loading ? "Refreshing..." : "Refresh List"}
                         </button>
                     </div>
 
                     <div className="search-bar">
                         <input
                             type="text"
-                            placeholder="Search files..."
+                            placeholder="Search files by name..."
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                         />
@@ -209,20 +206,20 @@ function App() {
                     </div>
 
                     <div className="file-list-header">
-                        <span>FILE NAME</span>
-                        <span>ACTION</span>
+                        <span>ARCHIVE NAME</span>
+                        <span>STATUS & ACTION</span>
                     </div>
 
                     <div className="downloads-list">
                         {loading && (
                             <div className="message">
-                                Loading files...
+                                Loading files from backend...
                             </div>
                         )}
 
                         {!loading && error && (
                             <div className="message error">
-                                <strong>Unable to load files</strong>
+                                <strong>Unable to connect to server</strong>
                                 <p>{error}</p>
                                 <button onClick={loadPosts}>Try again</button>
                             </div>
@@ -231,7 +228,7 @@ function App() {
                         {!loading && !error && filteredPosts.length === 0 && (
                             <div className="message">
                                 {search
-                                    ? "No files match your search."
+                                    ? "No files match your search criteria."
                                     : "No files are currently available."}
                             </div>
                         )}
@@ -247,7 +244,7 @@ function App() {
                                         <span className="group-count">{currentPosts.length}</span>
                                     </div>
                                     <span className="group-chevron">
-                                        {currentOpen ? "▲ Hide" : "▼ Show"}
+                                        {currentOpen ? "▲ Collapse" : "▼ Expand"}
                                     </span>
                                 </button>
                                 {currentOpen && (
@@ -269,7 +266,7 @@ function App() {
                                         <span className="group-count">{deprecatedPosts.length}</span>
                                     </div>
                                     <span className="group-chevron">
-                                        {deprecatedOpen ? "▲ Hide" : "▼ Show"}
+                                        {deprecatedOpen ? "▲ Collapse" : "▼ Expand"}
                                     </span>
                                 </button>
                                 {deprecatedOpen && (
@@ -282,13 +279,13 @@ function App() {
                     </div>
 
                     <div className="downloads-footer">
-                        {filteredPosts.length} of {posts.length} files
+                        Showing {filteredPosts.length} of {posts.length} total files
                     </div>
                 </section>
             </main>
 
             <footer className="footer">
-                <span>DB Downloader</span>
+                <span>DB Downloader — Powered by Yurpha Games Infrastructure</span>
             </footer>
         </div>
     );

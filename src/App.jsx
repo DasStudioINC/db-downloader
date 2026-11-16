@@ -256,7 +256,7 @@ function App() {
                         <div className="panel-eyebrow">
                             <span className="status-dot"></span>
                             <span>
-                                {selectedPost ? "Package Inspector" : "Yurpha Infrastructure"}
+                                {selectedPost ? "Package Inspector" : "Yurpha Games DB"}
                             </span>
                         </div>
 
@@ -518,7 +518,7 @@ function App() {
             </main>
 
             <footer className="footer">
-                <span>DB Downloader — Yurpha Games Infrastructure</span>
+                <span>DB Downloader — Yurpha Games DB</span>
 
                 <div className="footer-links">
                     {SOCIAL_LINKS.map((link) => (

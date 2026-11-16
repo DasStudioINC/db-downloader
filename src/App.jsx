@@ -243,20 +243,7 @@ function App() {
                     </a>
                 </div>
 
-                <nav className="social-links" aria-label="Official links">
-                    {SOCIAL_LINKS.map((link) => (
-                        <a
-                            key={link.url}
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="social-link"
-                        >
-                            <SocialIcon type={link.type} />
-                            <span>{link.label}</span>
-                        </a>
-                    ))}
-                </nav>
+                
             </header>
 
             <main className="main-layout">

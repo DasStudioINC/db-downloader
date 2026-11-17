@@ -1746,3 +1746,183 @@
 .zip-modal.single-file-modal {
   width: min(1120px, 95vw);
 }
+
+/* =========================================================
+   Markdown Preview & Rendered/Raw Toggle
+   ========================================================= */
+.md-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.md-toggle-btn {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #8b949e;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.md-toggle-btn:hover {
+  color: #e6edf3;
+}
+
+.md-toggle-btn.active {
+  background: rgba(56, 139, 253, 0.22);
+  color: #79c0ff;
+  box-shadow: inset 0 0 0 1px rgba(88, 166, 255, 0.4);
+}
+
+.zip-markdown-body {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 38px 48px;
+  color: #e6edf3;
+  font-size: 0.94rem;
+  line-height: 1.7;
+  word-wrap: break-word;
+}
+
+.zip-markdown-body > *:first-child {
+  margin-top: 0;
+}
+
+.zip-markdown-body h1,
+.zip-markdown-body h2,
+.zip-markdown-body h3,
+.zip-markdown-body h4 {
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 1.6em;
+  margin-bottom: 0.65em;
+  letter-spacing: -0.02em;
+}
+
+.zip-markdown-body h1 {
+  font-size: 1.85rem;
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.zip-markdown-body h2 {
+  font-size: 1.4rem;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.zip-markdown-body h3 {
+  font-size: 1.15rem;
+}
+
+.zip-markdown-body p {
+  margin: 0 0 1em;
+  color: #c9d1d9;
+}
+
+.zip-markdown-body a {
+  color: #58a6ff;
+  text-decoration: none;
+}
+
+.zip-markdown-body a:hover {
+  text-decoration: underline;
+}
+
+.zip-markdown-body ul,
+.zip-markdown-body ol {
+  margin: 0 0 1em;
+  padding-left: 1.6em;
+  color: #c9d1d9;
+}
+
+.zip-markdown-body li + li {
+  margin-top: 0.35em;
+}
+
+.zip-markdown-body blockquote {
+  margin: 0 0 1.1em;
+  padding: 0.5em 1em;
+  border-left: 3px solid #3b82f6;
+  background: rgba(59, 130, 246, 0.08);
+  border-radius: 0 8px 8px 0;
+  color: #94a3b8;
+}
+
+.zip-markdown-body blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.zip-markdown-body code {
+  font-family:
+    "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo,
+    Consolas, monospace;
+  font-size: 0.84em;
+  padding: 0.18em 0.45em;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #79c0ff;
+}
+
+.zip-markdown-body pre {
+  margin: 0 0 1.2em;
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: #0d1117;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow-x: auto;
+  line-height: 1.55;
+}
+
+.zip-markdown-body pre code {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #e6edf3;
+  font-size: 0.83rem;
+}
+
+.zip-markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 1.2em;
+  font-size: 0.88rem;
+}
+
+.zip-markdown-body th,
+.zip-markdown-body td {
+  padding: 9px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+}
+
+.zip-markdown-body th {
+  background: rgba(255, 255, 255, 0.04);
+  color: #f0f6fc;
+  font-weight: 600;
+}
+
+.zip-markdown-body tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.zip-markdown-body hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 1.8em 0;
+}
+
+.zip-markdown-body img {
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}

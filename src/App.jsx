@@ -409,7 +409,6 @@ function getFileMeta(filename) {
   };
 }
 
-// Infers the badge & action label for a post on the main list
 function getPostDisplayMeta(post) {
   const rawCandidate =
     post.fileName ||
@@ -537,7 +536,6 @@ function getActionButtonText(kind) {
   }
 }
 
-// Detects actual binary/text type from downloaded bytes + Content-Type header
 function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
   const bytes = new Uint8Array(arrayBuffer);
   const ct = (contentTypeHeader || "").toLowerCase();
@@ -579,7 +577,7 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
     return { isZip: false, ext: "webp", mime: "image/webp" };
   }
 
-  // 3. Videos (MP4/MOV ftyp box, WebM/MKV EBML header)
+  // 3. Videos
   if (
     bytes[4] === 0x66 &&
     bytes[5] === 0x74 &&
@@ -597,7 +595,7 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
     return { isZip: false, ext: "webm", mime: "video/webm" };
   }
 
-  // 4. Audio (MP3 ID3 or frame sync, WAV RIFF..WAVE, OGG OggS, FLAC fLaC)
+  // 4. Audio
   if (
     (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) ||
     (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0)
@@ -633,7 +631,7 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
     return { isZip: false, ext: "flac", mime: "audio/flac" };
   }
 
-  // 5. PDF (%PDF)
+  // 5. PDF
   if (
     bytes[0] === 0x25 &&
     bytes[1] === 0x50 &&
@@ -868,8 +866,11 @@ function App() {
   const [fileContentLoading, setFileContentLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Markdown view mode: "preview" (rendered HTML) | "raw" (actual raw .md file with line numbers)
+  // Markdown view mode: "preview" | "raw"
   const [mdViewMode, setMdViewMode] = useState("preview");
+
+  // Mobile drawer state for ZIP file tree
+  const [mobileTreeOpen, setMobileTreeOpen] = useState(false);
 
   async function loadPosts() {
     setLoading(true);
@@ -909,15 +910,28 @@ function App() {
     loadPosts();
   }, []);
 
+  // Lock background scroll & handle Escape key while modal is open
   useEffect(() => {
+    if (!viewingPost) return;
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     function handleKeyDown(e) {
-      if (e.key === "Escape" && viewingPost) {
-        closeViewer();
+      if (e.key === "Escape") {
+        if (mobileTreeOpen) {
+          setMobileTreeOpen(false);
+        } else {
+          closeViewer();
+        }
       }
     }
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [viewingPost]);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [viewingPost, mobileTreeOpen]);
 
   function getDownloadUrl(searchTitle) {
     return `${API_URL}/search/${encodeURIComponent(searchTitle)}/post`;
@@ -941,6 +955,7 @@ function App() {
     setFileContent("");
     setImageZoom(1);
     setMdViewMode("preview");
+    setMobileTreeOpen(false);
     clearMediaUrl();
     setExpandedDirs({});
 
@@ -963,7 +978,7 @@ function App() {
         );
       }
 
-      // STANDALONE FILE MODE (Standalone JSON, Markdown, Video, Audio, Image, PDF, Code, Binary)
+      // STANDALONE FILE MODE
       if (!detected.isZip) {
         setIsSingleFileMode(true);
         const baseName = (post.fileName || post.postName || "file").replace(
@@ -1006,7 +1021,7 @@ function App() {
         return;
       }
 
-      // ZIP ARCHIVE MODE (Tree + Multi-file Explorer)
+      // ZIP ARCHIVE MODE
       setIsSingleFileMode(false);
       const zip = await JSZip.loadAsync(arrayBuffer);
       const entries = [];
@@ -1036,6 +1051,8 @@ function App() {
 
       if (firstPreviewable) {
         await selectZipFile(firstPreviewable);
+      } else {
+        setMobileTreeOpen(true);
       }
     } catch (err) {
       setZipError(err.message || "Could not read file contents.");
@@ -1049,6 +1066,7 @@ function App() {
     setCopied(false);
     setImageZoom(1);
     setMdViewMode("preview");
+    setMobileTreeOpen(false);
     clearMediaUrl();
 
     if (!fileObj.entry) return;
@@ -1137,6 +1155,7 @@ function App() {
     setActiveFile(null);
     setFileContent("");
     setMdViewMode("preview");
+    setMobileTreeOpen(false);
   }
 
   const filteredZipFiles = useMemo(() => {
@@ -1346,51 +1365,53 @@ function App() {
             {isCurrent ? "Current" : "Deprecated"}
           </span>
 
-          <button
-            type="button"
-            className="view-button"
-            onClick={(event) => {
-              event.stopPropagation();
-              openArchiveViewer(post);
-            }}
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          <div className="file-action-buttons">
+            <button
+              type="button"
+              className="view-button"
+              onClick={(event) => {
+                event.stopPropagation();
+                openArchiveViewer(post);
+              }}
             >
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            <span>{getActionButtonText(postMeta.kind)}</span>
-          </button>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <span>{getActionButtonText(postMeta.kind)}</span>
+            </button>
 
-          <a
-            className={`download-button ${isCurrent ? "" : "secondary"}`}
-            href={getDownloadUrl(post.searchTitle)}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+            <a
+              className={`download-button ${isCurrent ? "" : "secondary"}`}
+              href={getDownloadUrl(post.searchTitle)}
+              onClick={(event) => event.stopPropagation()}
             >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            <span>Download</span>
-          </a>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span>Download</span>
+            </a>
+          </div>
         </div>
       </div>
     );
@@ -1663,7 +1684,9 @@ function App() {
                   <span
                     className={`group-chevron ${currentOpen ? "open" : ""}`}
                   >
-                    <span>{currentOpen ? "Collapse" : "Expand"}</span>
+                    <span className="group-chevron-text">
+                      {currentOpen ? "Collapse" : "Expand"}
+                    </span>
                     <svg
                       width="14"
                       height="14"
@@ -1702,7 +1725,9 @@ function App() {
                   <span
                     className={`group-chevron ${deprecatedOpen ? "open" : ""}`}
                   >
-                    <span>{deprecatedOpen ? "Collapse" : "Expand"}</span>
+                    <span className="group-chevron-text">
+                      {deprecatedOpen ? "Collapse" : "Expand"}
+                    </span>
                     <svg
                       width="14"
                       height="14"
@@ -1746,6 +1771,30 @@ function App() {
           >
             <div className="zip-modal-header">
               <div className="zip-modal-title">
+                {/* Mobile drawer button for ZIP archives */}
+                {!isSingleFileMode && !zipLoading && !zipError && (
+                  <button
+                    type="button"
+                    className={`mobile-tree-toggle ${mobileTreeOpen ? "active" : ""}`}
+                    onClick={() => setMobileTreeOpen((prev) => !prev)}
+                    aria-label="Toggle archive files"
+                  >
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                    </svg>
+                    <span>Files ({totalFileCount})</span>
+                  </button>
+                )}
+
                 <span
                   className="zip-badge"
                   style={
@@ -1789,7 +1838,7 @@ function App() {
 
               <div className="zip-modal-actions">
                 <a
-                  className="download-button"
+                  className="download-button modal-download-btn"
                   href={getDownloadUrl(viewingPost.searchTitle)}
                 >
                   <svg
@@ -1806,7 +1855,7 @@ function App() {
                     <polyline points="7 10 12 15 17 10" />
                     <line x1="12" y1="15" x2="12" y2="3" />
                   </svg>
-                  <span>
+                  <span className="modal-download-label">
                     {isSingleFileMode ? "Download File" : "Download ZIP"}
                   </span>
                 </a>
@@ -1854,9 +1903,31 @@ function App() {
               <div
                 className={`zip-explorer-body ${isSingleFileMode ? "single-pane" : ""}`}
               >
-                {/* Only show the directory tree sidebar when viewing a ZIP archive */}
+                {/* Mobile drawer backdrop */}
+                {!isSingleFileMode && mobileTreeOpen && (
+                  <div
+                    className="mobile-tree-backdrop"
+                    onClick={() => setMobileTreeOpen(false)}
+                  />
+                )}
+
+                {/* Directory tree sidebar (sticky left pane on desktop, slide-over drawer on mobile) */}
                 {!isSingleFileMode && (
-                  <aside className="zip-tree-sidebar">
+                  <aside
+                    className={`zip-tree-sidebar ${mobileTreeOpen ? "mobile-open" : ""}`}
+                  >
+                    <div className="zip-tree-mobile-header">
+                      <span>Archive Contents ({totalFileCount})</span>
+                      <button
+                        type="button"
+                        className="zip-tree-clear"
+                        onClick={() => setMobileTreeOpen(false)}
+                        aria-label="Close file tree"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
                     <div className="zip-tree-search">
                       <svg
                         width="13"
@@ -2197,7 +2268,15 @@ function App() {
                     <div className="zip-status-box">
                       <strong>No File Selected</strong>
                       <p>
-                        Pick any file from the left tree to inspect or play it.
+                        Pick any file from the{" "}
+                        <button
+                          type="button"
+                          className="inline-link-btn"
+                          onClick={() => setMobileTreeOpen(true)}
+                        >
+                          archive file list
+                        </button>{" "}
+                        to inspect or play it.
                       </p>
                     </div>
                   )}

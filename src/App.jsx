@@ -2326,7 +2326,7 @@ function App() {
       )}
 
       <footer className="footer">
-        <span>DB Downloader — Yurpha Games DB - v0.1.5</span>
+        <span>DB Downloader — Yurpha Games DB - v0.1.7</span>
 
         <div className="footer-links">
           {SOCIAL_LINKS.map((link) => (

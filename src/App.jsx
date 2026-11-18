@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 import JSZip from "jszip";
 import Prism from "prismjs";
@@ -22,7 +23,6 @@ import "prismjs/components/prism-xml-doc";
 
 import "./App.css";
 
-// Configure marked to use Prism for fenced code blocks inside Markdown
 marked.setOptions({
   breaks: true,
   gfm: true,
@@ -363,6 +363,7 @@ function getFileMeta(filename) {
       kind: "image",
     };
   }
+
   if (kind === "video") {
     return {
       lang: "none",
@@ -372,6 +373,7 @@ function getFileMeta(filename) {
       kind: "video",
     };
   }
+
   if (kind === "audio") {
     return {
       lang: "none",
@@ -381,6 +383,7 @@ function getFileMeta(filename) {
       kind: "audio",
     };
   }
+
   if (kind === "pdf") {
     return {
       lang: "none",
@@ -390,7 +393,9 @@ function getFileMeta(filename) {
       kind: "pdf",
     };
   }
+
   if (EXTENSION_META[ext]) return EXTENSION_META[ext];
+
   if (kind === "binary") {
     return {
       lang: "none",
@@ -400,6 +405,7 @@ function getFileMeta(filename) {
       kind: "binary",
     };
   }
+
   return {
     lang: "none",
     label: ext ? ext.toUpperCase() : "File",
@@ -419,6 +425,7 @@ function getPostDisplayMeta(post) {
     "";
 
   const explicitExt = getExtension(rawCandidate);
+
   if (
     explicitExt &&
     (EXTENSION_META[explicitExt] ||
@@ -442,6 +449,7 @@ function getPostDisplayMeta(post) {
       kind: "markdown",
     };
   }
+
   if (/\bjson\b|postman/.test(name)) {
     return {
       lang: "json",
@@ -451,6 +459,7 @@ function getPostDisplayMeta(post) {
       kind: "text",
     };
   }
+
   if (/\b(mp4|webm|mov|mkv|avi|video)\b/.test(name)) {
     return {
       lang: "none",
@@ -460,6 +469,7 @@ function getPostDisplayMeta(post) {
       kind: "video",
     };
   }
+
   if (/\b(mp3|wav|ogg|flac|m4a|audio|sound|music)\b/.test(name)) {
     return {
       lang: "none",
@@ -469,6 +479,7 @@ function getPostDisplayMeta(post) {
       kind: "audio",
     };
   }
+
   if (/\b(png|jpg|jpeg|gif|webp|svg|image|screenshot)\b/.test(name)) {
     return {
       lang: "none",
@@ -478,6 +489,7 @@ function getPostDisplayMeta(post) {
       kind: "image",
     };
   }
+
   if (/\bpdf\b/.test(name)) {
     return {
       lang: "none",
@@ -487,6 +499,7 @@ function getPostDisplayMeta(post) {
       kind: "pdf",
     };
   }
+
   if (/\b(exe|installer|setup)\b/.test(name)) {
     return {
       lang: "none",
@@ -496,6 +509,7 @@ function getPostDisplayMeta(post) {
       kind: "binary",
     };
   }
+
   if (/\bsql\b/.test(name)) {
     return {
       lang: "sql",
@@ -540,7 +554,6 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
   const bytes = new Uint8Array(arrayBuffer);
   const ct = (contentTypeHeader || "").toLowerCase();
 
-  // 1. ZIP: PK\x03\x04
   if (
     bytes[0] === 0x50 &&
     bytes[1] === 0x4b &&
@@ -549,7 +562,6 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
     return { isZip: true, ext: "zip", mime: "application/zip" };
   }
 
-  // 2. Images
   if (
     bytes[0] === 0x89 &&
     bytes[1] === 0x50 &&
@@ -558,12 +570,15 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
   ) {
     return { isZip: false, ext: "png", mime: "image/png" };
   }
+
   if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
     return { isZip: false, ext: "jpg", mime: "image/jpeg" };
   }
+
   if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) {
     return { isZip: false, ext: "gif", mime: "image/gif" };
   }
+
   if (
     bytes[0] === 0x52 &&
     bytes[1] === 0x49 &&
@@ -577,7 +592,6 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
     return { isZip: false, ext: "webp", mime: "image/webp" };
   }
 
-  // 3. Videos
   if (
     bytes[4] === 0x66 &&
     bytes[5] === 0x74 &&
@@ -586,6 +600,7 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
   ) {
     return { isZip: false, ext: "mp4", mime: "video/mp4" };
   }
+
   if (
     bytes[0] === 0x1a &&
     bytes[1] === 0x45 &&
@@ -595,13 +610,13 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
     return { isZip: false, ext: "webm", mime: "video/webm" };
   }
 
-  // 4. Audio
   if (
     (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) ||
     (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0)
   ) {
     return { isZip: false, ext: "mp3", mime: "audio/mpeg" };
   }
+
   if (
     bytes[0] === 0x52 &&
     bytes[1] === 0x49 &&
@@ -614,6 +629,7 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
   ) {
     return { isZip: false, ext: "wav", mime: "audio/wav" };
   }
+
   if (
     bytes[0] === 0x4f &&
     bytes[1] === 0x67 &&
@@ -622,6 +638,7 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
   ) {
     return { isZip: false, ext: "ogg", mime: "audio/ogg" };
   }
+
   if (
     bytes[0] === 0x66 &&
     bytes[1] === 0x4c &&
@@ -631,7 +648,6 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
     return { isZip: false, ext: "flac", mime: "audio/flac" };
   }
 
-  // 5. PDF
   if (
     bytes[0] === 0x25 &&
     bytes[1] === 0x50 &&
@@ -641,7 +657,6 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
     return { isZip: false, ext: "pdf", mime: "application/pdf" };
   }
 
-  // 6. Non-ZIP archives / Windows EXE
   if (bytes[0] === 0x52 && bytes[1] === 0x61 && bytes[2] === 0x72) {
     return {
       isZip: false,
@@ -650,6 +665,7 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
       unsupportedArchive: "RAR Archive (.rar)",
     };
   }
+
   if (bytes[0] === 0x37 && bytes[1] === 0x7a) {
     return {
       isZip: false,
@@ -658,11 +674,11 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
       unsupportedArchive: "7-Zip Archive (.7z)",
     };
   }
+
   if (bytes[0] === 0x4d && bytes[1] === 0x5a) {
     return { isZip: false, ext: "exe", mime: "application/x-msdownload" };
   }
 
-  // 7. Fall back to Content-Type header or post metadata
   if (ct.includes("video/"))
     return { isZip: false, ext: "mp4", mime: ct.split(";")[0] };
   if (ct.includes("audio/"))
@@ -674,7 +690,6 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
   if (ct.includes("markdown"))
     return { isZip: false, ext: "md", mime: "text/markdown" };
 
-  // 8. Check if it's readable UTF-8 text / JSON / Markdown
   const sample = new TextDecoder("utf-8", { fatal: false }).decode(
     bytes.slice(0, 2048),
   );
@@ -691,6 +706,7 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
   }
 
   const explicitExt = getExtension(post.fileName || post.postName || "");
+
   if (explicitExt && EXTENSION_META[explicitExt]) {
     return { isZip: false, ext: explicitExt, mime: "text/plain" };
   }
@@ -729,6 +745,7 @@ function buildFileTree(files) {
           children: {},
         };
       }
+
       current = current.children[part];
     });
   }
@@ -752,6 +769,7 @@ function formatDate(dateString) {
   if (!dateString) return null;
   const parsed = new Date(dateString);
   if (Number.isNaN(parsed.getTime())) return null;
+
   return parsed.toLocaleDateString(undefined, {
     year: "numeric",
     month: "short",
@@ -769,6 +787,7 @@ function TreeNode({
 }) {
   if (node.isDir) {
     const isOpen = !!expandedDirs[node.path];
+
     return (
       <div className="tree-branch">
         <button
@@ -788,6 +807,7 @@ function TreeNode({
           >
             <polyline points="9 18 15 12 9 6" />
           </svg>
+
           <svg
             className="folder-icon"
             width="15"
@@ -797,8 +817,10 @@ function TreeNode({
           >
             <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z" />
           </svg>
+
           <span className="tree-label">{node.name}</span>
         </button>
+
         {isOpen &&
           node.childrenList.map((child) => (
             <TreeNode
@@ -835,6 +857,7 @@ function TreeNode({
       >
         {meta.badge}
       </span>
+
       <span className="tree-label">{node.name}</span>
     </button>
   );
@@ -850,7 +873,6 @@ function App() {
   const [currentOpen, setCurrentOpen] = useState(true);
   const [deprecatedOpen, setDeprecatedOpen] = useState(false);
 
-  // Archive / Standalone File Viewer State
   const [viewingPost, setViewingPost] = useState(null);
   const [isSingleFileMode, setIsSingleFileMode] = useState(false);
   const [zipLoading, setZipLoading] = useState(false);
@@ -866,10 +888,7 @@ function App() {
   const [fileContentLoading, setFileContentLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Markdown view mode: "preview" | "raw"
   const [mdViewMode, setMdViewMode] = useState("preview");
-
-  // Mobile drawer state for ZIP file tree
   const [mobileTreeOpen, setMobileTreeOpen] = useState(false);
 
   async function loadPosts() {
@@ -910,7 +929,6 @@ function App() {
     loadPosts();
   }, []);
 
-  // Lock background scroll & handle Escape key while modal is open
   useEffect(() => {
     if (!viewingPost) return;
 
@@ -926,7 +944,9 @@ function App() {
         }
       }
     }
+
     window.addEventListener("keydown", handleKeyDown);
+
     return () => {
       document.body.style.overflow = prevOverflow;
       window.removeEventListener("keydown", handleKeyDown);
@@ -935,6 +955,14 @@ function App() {
 
   function getDownloadUrl(searchTitle) {
     return `${API_URL}/search/${encodeURIComponent(searchTitle)}/post`;
+  }
+
+  function getZipTreeUrl(searchTitle) {
+    return `${API_URL}/search/${encodeURIComponent(searchTitle)}/zip/tree`;
+  }
+
+  function getZipEntryUrl(searchTitle, path) {
+    return `${API_URL}/search/${encodeURIComponent(searchTitle)}/zip/file?path=${encodeURIComponent(path)}`;
   }
 
   function clearMediaUrl() {
@@ -960,12 +988,77 @@ function App() {
     setExpandedDirs({});
 
     try {
+      let treeResponse;
+
+      try {
+        treeResponse = await fetch(getZipTreeUrl(post.searchTitle));
+      } catch {
+        throw new Error("Unable to connect to the server.");
+      }
+
+      if (treeResponse.ok) {
+        const treeData = await treeResponse.json();
+
+        if (!Array.isArray(treeData)) {
+          throw new Error("The server returned an invalid ZIP file tree.");
+        }
+
+        const entries = treeData.map((entry) => ({
+          path: entry.path,
+          isDir: Boolean(entry.directory),
+          size: entry.size ?? null,
+          compressedSize: entry.compressedSize ?? null,
+          searchTitle: post.searchTitle,
+          remoteZipEntry: !entry.directory,
+        }));
+
+        const initialExpanded = {};
+
+        for (const entry of entries) {
+          const parts = entry.path.split("/").filter(Boolean);
+
+          if (parts.length > 1) {
+            initialExpanded[parts[0]] = true;
+          }
+        }
+
+        setIsSingleFileMode(false);
+        setZipFiles(entries);
+        setExpandedDirs(initialExpanded);
+
+        const firstPreviewable =
+          entries.find(
+            (entry) => !entry.isDir && /readme/i.test(entry.path),
+          ) ||
+          entries.find(
+            (entry) =>
+              !entry.isDir && getPreviewKind(entry.path) !== "binary",
+          ) ||
+          entries.find((entry) => !entry.isDir);
+
+        if (firstPreviewable) {
+          await selectZipFile(firstPreviewable);
+        } else {
+          setMobileTreeOpen(true);
+        }
+
+        return;
+      }
+
+      if (treeResponse.status !== 400 && treeResponse.status !== 404) {
+        throw new Error(
+          `Failed to load ZIP file tree (HTTP ${treeResponse.status})`,
+        );
+      }
+
       const response = await fetch(getDownloadUrl(post.searchTitle));
+
       if (!response.ok) {
         throw new Error(`Failed to fetch file (HTTP ${response.status})`);
       }
 
       const arrayBuffer = await response.arrayBuffer();
+
       const detected = detectResponseFormat(
         arrayBuffer,
         response.headers.get("content-type"),
@@ -978,81 +1071,54 @@ function App() {
         );
       }
 
-      // STANDALONE FILE MODE
-      if (!detected.isZip) {
-        setIsSingleFileMode(true);
-        const baseName = (post.fileName || post.postName || "file").replace(
-          /\.[^/.]+$/,
-          "",
+      if (detected.isZip) {
+        throw new Error(
+          "The ZIP file could not be indexed by the server. Please try again or contact the server administrator.",
         );
-        const virtualPath = `${baseName}.${detected.ext}`;
-        const singleFile = {
-          path: virtualPath,
-          isDir: false,
-          size: arrayBuffer.byteLength,
-          entry: null,
-          rawBuffer: arrayBuffer,
-          mime: detected.mime,
-        };
-
-        setZipFiles([singleFile]);
-        setActiveFile(singleFile);
-
-        const kind = getPreviewKind(virtualPath);
-        if (
-          kind === "image" ||
-          kind === "video" ||
-          kind === "audio" ||
-          kind === "pdf"
-        ) {
-          const blob = new Blob([arrayBuffer], { type: detected.mime });
-          setMediaPreviewUrl(URL.createObjectURL(blob));
-        } else if (kind === "text" || kind === "markdown") {
-          let decoded = new TextDecoder("utf-8").decode(arrayBuffer);
-          if (detected.ext === "json") {
-            try {
-              decoded = JSON.stringify(JSON.parse(decoded), null, 2);
-            } catch {
-              // Keep raw string if JSON has trailing comments/formatting
-            }
-          }
-          setFileContent(decoded);
-        }
-        return;
       }
 
-      // ZIP ARCHIVE MODE
-      setIsSingleFileMode(false);
-      const zip = await JSZip.loadAsync(arrayBuffer);
-      const entries = [];
-      const initialExpanded = {};
+      setIsSingleFileMode(true);
 
-      zip.forEach((relativePath, zipEntry) => {
-        entries.push({
-          path: relativePath,
-          isDir: zipEntry.dir,
-          size: zipEntry._data?.uncompressedSize ?? null,
-          entry: zipEntry,
-        });
+      const baseName = (post.fileName || post.postName || "file").replace(
+        /\.[^/.]+$/,
+        "",
+      );
 
-        const parts = relativePath.split("/").filter(Boolean);
-        if (parts.length > 1) {
-          initialExpanded[parts[0]] = true;
+      const virtualPath = `${baseName}.${detected.ext}`;
+
+      const singleFile = {
+        path: virtualPath,
+        isDir: false,
+        size: arrayBuffer.byteLength,
+        entry: null,
+        rawBuffer: arrayBuffer,
+        mime: detected.mime,
+      };
+
+      setZipFiles([singleFile]);
+      setActiveFile(singleFile);
+
+      const kind = getPreviewKind(virtualPath);
+
+      if (
+        kind === "image" ||
+        kind === "video" ||
+        kind === "audio" ||
+        kind === "pdf"
+      ) {
+        const blob = new Blob([arrayBuffer], { type: detected.mime });
+        setMediaPreviewUrl(URL.createObjectURL(blob));
+      } else if (kind === "text" || kind === "markdown") {
+        let decoded = new TextDecoder("utf-8").decode(arrayBuffer);
+
+        if (detected.ext === "json") {
+          try {
+            decoded = JSON.stringify(JSON.parse(decoded), null, 2);
+          } catch {
+          }
         }
-      });
 
-      setZipFiles(entries);
-      setExpandedDirs(initialExpanded);
-
-      const firstPreviewable =
-        entries.find((e) => !e.isDir && /readme/i.test(e.path)) ||
-        entries.find((e) => !e.isDir && getPreviewKind(e.path) !== "binary") ||
-        entries.find((e) => !e.isDir);
-
-      if (firstPreviewable) {
-        await selectZipFile(firstPreviewable);
-      } else {
-        setMobileTreeOpen(true);
+        setFileContent(decoded);
       }
     } catch (err) {
       setZipError(err.message || "Could not read file contents.");
@@ -1061,7 +1127,25 @@ function App() {
     }
   }
 
+  async function fetchZipEntryBlob(fileObj) {
+    if (!fileObj?.remoteZipEntry || !fileObj.searchTitle) {
+      throw new Error("This ZIP entry is not available for download.");
+    }
+
+    const response = await fetch(
+      getZipEntryUrl(fileObj.searchTitle, fileObj.path),
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ZIP entry (HTTP ${response.status})`);
+    }
+
+    return response.blob();
+  }
+
   async function selectZipFile(fileObj) {
+    if (!fileObj || fileObj.isDir) return;
+
     setActiveFile(fileObj);
     setCopied(false);
     setImageZoom(1);
@@ -1069,28 +1153,9 @@ function App() {
     setMobileTreeOpen(false);
     clearMediaUrl();
 
-    if (!fileObj.entry) return;
+    if (!fileObj.remoteZipEntry && !fileObj.entry) return;
 
     const kind = getPreviewKind(fileObj.path);
-
-    if (
-      kind === "image" ||
-      kind === "video" ||
-      kind === "audio" ||
-      kind === "pdf"
-    ) {
-      setFileContentLoading(true);
-      try {
-        const rawBlob = await fileObj.entry.async("blob");
-        const typedBlob = new Blob([rawBlob], {
-          type: getMimeType(fileObj.path),
-        });
-        setMediaPreviewUrl(URL.createObjectURL(typedBlob));
-      } finally {
-        setFileContentLoading(false);
-      }
-      return;
-    }
 
     if (kind === "binary") {
       setFileContent("");
@@ -1098,18 +1163,39 @@ function App() {
     }
 
     setFileContentLoading(true);
+
     try {
-      let text = await fileObj.entry.async("string");
+      const responseBlob = fileObj.remoteZipEntry
+        ? await fetchZipEntryBlob(fileObj)
+        : await fileObj.entry.async("blob");
+
+      if (
+        kind === "image" ||
+        kind === "video" ||
+        kind === "audio" ||
+        kind === "pdf"
+      ) {
+        const typedBlob = new Blob([responseBlob], {
+          type: getMimeType(fileObj.path),
+        });
+
+        setMediaPreviewUrl(URL.createObjectURL(typedBlob));
+        return;
+      }
+
+      let text = await responseBlob.text();
+
       if (getExtension(fileObj.path) === "json") {
         try {
           text = JSON.stringify(JSON.parse(text), null, 2);
         } catch {
-          // Keep original formatting if not strict JSON
         }
       }
+
       setFileContent(text);
-    } catch {
-      setFileContent("[Unable to decode file as UTF-8 text]");
+    } catch (err) {
+      setFileContent("");
+      setZipError(err.message || "Unable to load the selected file.");
     } finally {
       setFileContentLoading(false);
     }
@@ -1117,9 +1203,13 @@ function App() {
 
   async function downloadSingleEntry(fileObj) {
     if (!fileObj) return;
+
     const filename = fileObj.path.split("/").pop() || "download";
     let blob;
-    if (fileObj.entry) {
+
+    if (fileObj.remoteZipEntry) {
+      blob = await fetchZipEntryBlob(fileObj);
+    } else if (fileObj.entry) {
       const raw = await fileObj.entry.async("blob");
       blob = new Blob([raw], { type: getMimeType(fileObj.path) });
     } else if (fileObj.rawBuffer) {
@@ -1137,6 +1227,7 @@ function App() {
     document.body.appendChild(a);
     a.click();
     a.remove();
+
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
 
@@ -1161,208 +1252,100 @@ function App() {
   const filteredZipFiles = useMemo(() => {
     if (!treeFilter.trim()) return zipFiles;
     const q = treeFilter.toLowerCase();
-    return zipFiles.filter((f) => !f.isDir && f.path.toLowerCase().includes(q));
+    return zipFiles.filter(
+      (file) => !file.isDir && file.path.toLowerCase().includes(q),
+    );
   }, [zipFiles, treeFilter]);
 
-  const fileTree = useMemo(() => buildFileTree(zipFiles), [zipFiles]);
+  const fileTree = useMemo(() => buildFileTree(filteredZipFiles), [
+    filteredZipFiles,
+  ]);
 
-  const activeKind = useMemo(
-    () => (activeFile ? getPreviewKind(activeFile.path) : "text"),
-    [activeFile],
+  const currentPosts = useMemo(
+    () =>
+      posts.filter(
+        (post) => (post.version || post.status || "").toUpperCase() === "CURRENT",
+      ),
+    [posts],
   );
 
-  const activeFileMeta = useMemo(
-    () => (activeFile ? getFileMeta(activeFile.path) : null),
-    [activeFile],
+  const deprecatedPosts = useMemo(
+    () =>
+      posts.filter(
+        (post) =>
+          (post.version || post.status || "").toUpperCase() === "DEPRECATED",
+      ),
+    [posts],
   );
 
-  const isTextLike = activeKind === "text" || activeKind === "markdown";
+  const filteredCurrentPosts = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return currentPosts;
 
-  const highlightedLines = useMemo(() => {
-    if (!activeFile || !isTextLike || !fileContent) return [];
-    const lang = activeFileMeta?.lang || "none";
-    const grammar = Prism.languages[lang];
+    return currentPosts.filter((post) =>
+      `${post.postName || ""} ${post.description || ""} ${post.searchTitle || ""}`
+        .toLowerCase()
+        .includes(query),
+    );
+  }, [currentPosts, search]);
 
-    const html = grammar
-      ? Prism.highlight(fileContent, grammar, lang)
-      : fileContent
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
+  const filteredDeprecatedPosts = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return deprecatedPosts;
 
-    return html.split("\n");
-  }, [activeFile, isTextLike, activeFileMeta, fileContent]);
+    return deprecatedPosts.filter((post) =>
+      `${post.postName || ""} ${post.description || ""} ${post.searchTitle || ""}`
+        .toLowerCase()
+        .includes(query),
+    );
+  }, [deprecatedPosts, search]);
 
-  const renderedMarkdownHtml = useMemo(() => {
-    if (activeKind !== "markdown" || !fileContent) return "";
-    const rawHtml = marked.parse(fileContent);
-    return DOMPurify.sanitize(rawHtml);
-  }, [activeKind, fileContent]);
+  const totalCurrent = currentPosts.length;
+  const totalDeprecated = deprecatedPosts.length;
 
-  const filteredPosts = posts.filter((post) =>
-    (post.postName || "Unnamed file")
-      .toLowerCase()
-      .includes(search.toLowerCase()),
-  );
+  function selectPost(post) {
+    setSelectedPost(post);
+  }
 
-  const totalCurrentCount = posts.filter(
-    (post) => (post.version || "current").toLowerCase() === "current",
-  ).length;
-
-  const totalDeprecatedCount = posts.filter(
-    (post) => (post.version || "").toLowerCase() === "deprecated",
-  ).length;
-
-  const currentPosts = filteredPosts.filter(
-    (post) => (post.version || "current").toLowerCase() === "current",
-  );
-
-  const deprecatedPosts = filteredPosts.filter(
-    (post) => (post.version || "").toLowerCase() === "deprecated",
-  );
-
-  const renderFileRow = (post, index) => {
-    const isCurrent = (post.version || "current").toLowerCase() === "current";
-    const formattedDate = formatDate(post.postDate);
-    const postMeta = getPostDisplayMeta(post);
+  function renderPost(post) {
+    const meta = getPostDisplayMeta(post);
+    const version = (post.version || post.status || "CURRENT").toUpperCase();
+    const isDeprecated = version === "DEPRECATED";
 
     return (
       <div
-        className={`file-row ${isCurrent ? "" : "deprecated-row"} ${
-          selectedPost?.searchTitle === post.searchTitle ? "selected" : ""
-        }`}
-        key={post.searchTitle || index}
-        onClick={() => setSelectedPost(post)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            setSelectedPost(post);
-          }
-        }}
-        role="button"
-        tabIndex={0}
+        key={post.searchTitle}
+        className={`file-row ${selectedPost?.searchTitle === post.searchTitle ? "selected" : ""}`}
+        onClick={() => selectPost(post)}
       >
         <div className="file-details">
           <div
             className="file-icon"
             style={{
-              borderColor: `${postMeta.color}44`,
-              background: `${postMeta.color}14`,
-              color: postMeta.color,
+              color: meta.color,
+              borderColor: `${meta.color}44`,
+              background: `${meta.color}14`,
             }}
           >
-            {postMeta.kind === "video" ? (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-              >
-                <polygon points="5 3 19 12 5 21 5 3" />
-              </svg>
-            ) : postMeta.kind === "audio" ? (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-              >
-                <path d="M9 18V5l12-2v13" />
-                <circle cx="6" cy="18" r="3" />
-                <circle cx="18" cy="16" r="3" />
-              </svg>
-            ) : postMeta.kind === "image" ? (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-              >
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                <circle cx="8.5" cy="8.5" r="1.5" />
-                <polyline points="21 15 16 10 5 21" />
-              </svg>
-            ) : postMeta.kind === "markdown" ? (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-              </svg>
-            ) : postMeta.kind === "text" ? (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-              >
-                <polyline points="16 18 22 12 16 6" />
-                <polyline points="8 6 2 12 8 18" />
-              </svg>
-            ) : (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M21 8v13H3V8" />
-                <path d="M1 3h22v5H1z" />
-                <path d="M10 12h4" />
-              </svg>
-            )}
-            <span>{postMeta.badge}</span>
+            {meta.badge}
           </div>
 
           <div className="file-name">
-            <strong>{post.postName || "Unnamed file"}</strong>
+            <strong>{post.postName || post.fileName || "Untitled"}</strong>
 
             <div className="file-submeta">
-              <span style={{ color: postMeta.color, fontWeight: 600 }}>
-                {postMeta.label}
-              </span>
+              <span>{formatDate(post.postDate)}</span>
               <span className="meta-separator">•</span>
-              <span>
-                {post.userHandle
-                  ? `Uploaded by ${post.userHandle}`
-                  : "Repository File"}
-              </span>
-              {formattedDate && (
-                <>
-                  <span className="meta-separator">•</span>
-                  <span>{formattedDate}</span>
-                </>
-              )}
+              <span>{meta.label}</span>
             </div>
           </div>
         </div>
 
         <div className="file-actions">
           <span
-            className={`version-badge ${isCurrent ? "current" : "deprecated"}`}
+            className={`version-badge ${isDeprecated ? "deprecated" : "current"}`}
           >
-            {isCurrent ? "Current" : "Deprecated"}
+            {version}
           </span>
 
           <div className="file-action-buttons">
@@ -1371,71 +1354,57 @@ function App() {
               className="view-button"
               onClick={(event) => {
                 event.stopPropagation();
+                selectPost(post);
                 openArchiveViewer(post);
               }}
             >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
-              <span>{getActionButtonText(postMeta.kind)}</span>
+              {getActionButtonText(meta.kind)}
             </button>
 
             <a
-              className={`download-button ${isCurrent ? "" : "secondary"}`}
+              className="download-button"
               href={getDownloadUrl(post.searchTitle)}
               onClick={(event) => event.stopPropagation()}
+              download
             >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              <span>Download</span>
+              Download
             </a>
           </div>
         </div>
       </div>
     );
-  };
+  }
 
-  const selectedIsCurrent = selectedPost
-    ? (selectedPost.version || "current").toLowerCase() === "current"
-    : true;
+  const activeFileMeta = activeFile ? getFileMeta(activeFile.path) : null;
+  const activeFileKind = activeFile ? getPreviewKind(activeFile.path) : null;
+
+  const renderedMarkdown =
+    activeFileKind === "markdown"
+      ? DOMPurify.sanitize(marked.parse(fileContent || ""))
+      : "";
+
+  const renderedCode =
+    activeFile && activeFileKind === "text"
+      ? Prism.highlight(
+          fileContent || "",
+          Prism.languages[activeFileMeta?.lang] || Prism.languages.none,
+          activeFileMeta?.lang || "none",
+        )
+      : "";
 
   const selectedPostMeta = selectedPost
     ? getPostDisplayMeta(selectedPost)
     : null;
-  const totalFileCount = zipFiles.filter((f) => !f.isDir).length;
-  const totalFolderCount = zipFiles.filter((f) => f.isDir).length;
 
   return (
     <div className="app">
       <header className="header">
         <div className="brand-cluster">
-          <a href="/" className="logo">
+          <a className="logo" href="/">
             <span className="logo-mark">
               <svg
-                width="16"
-                height="16"
+                width="18"
+                height="18"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -1443,16 +1412,29 @@ function App() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <ellipse cx="12" cy="5" rx="9" ry="3" />
-                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                <path d="M4 7h16M4 12h16M4 17h16" />
               </svg>
             </span>
+
             <span className="logo-text">
-              <span className="logo-title">DB Downloader</span>
-              <span className="logo-subtitle">Yurpha Games Repository</span>
+              <span className="logo-title">YURPHA GAMES</span>
+              <span className="logo-subtitle">DB DOWNLOADER</span>
             </span>
           </a>
+        </div>
+
+        <div className="header-socials">
+          {SOCIAL_LINKS.map((link) => (
+            <a
+              key={link.type + link.label}
+              href={link.url}
+              target="_blank"
+              rel="noreferrer"
+              className={`social-link ${link.type}`}
+            >
+              {link.label}
+            </a>
+          ))}
         </div>
       </header>
 
@@ -1462,106 +1444,58 @@ function App() {
         >
           <div>
             <div className="panel-eyebrow">
-              <span className="status-dot"></span>
-              <span>
-                {selectedPost ? "Package Inspector" : "Yurpha Games DB"}
-              </span>
+              <span className="status-dot" />
+              PUBLIC REPOSITORY
             </div>
 
-            <h1>
-              {selectedPost
-                ? selectedPost.postName || "Unnamed file"
-                : "Database & Build Archives"}
-            </h1>
-
-            <div className="panel-divider"></div>
+            <h1>Yurpha Games Database</h1>
+            <div className="panel-divider" />
 
             <p>
-              {selectedPost
-                ? selectedPost.description ||
-                  "No description available for this item."
-                : "Select any file or archive from the release list to inspect its type, notes, and preview."}
+              Browse and download files shared through the Yurpha Games
+              database. Select a post to inspect its contents, preview files,
+              and download individual entries.
             </p>
 
             {selectedPost && (
-              <>
-                <div className="selected-meta-strip">
-                  <div className="meta-row">
-                    <span>Type</span>
-                    <strong style={{ color: selectedPostMeta?.color }}>
-                      {selectedPostMeta?.label}
-                    </strong>
-                  </div>
-                  <div className="meta-row">
-                    <span>Status</span>
-                    <strong
-                      style={{
-                        color: selectedIsCurrent
-                          ? "var(--green-text)"
-                          : "var(--red-text)",
-                      }}
-                    >
-                      {selectedIsCurrent ? "Current Release" : "Deprecated"}
-                    </strong>
-                  </div>
-                  {selectedPost.userHandle && (
-                    <div className="meta-row">
-                      <span>Publisher</span>
-                      <strong>{selectedPost.userHandle}</strong>
-                    </div>
-                  )}
-                  {formatDate(selectedPost.postDate) && (
-                    <div className="meta-row">
-                      <span>Published</span>
-                      <strong>{formatDate(selectedPost.postDate)}</strong>
-                    </div>
-                  )}
+              <div className="selected-meta-strip">
+                <div className="meta-row">
+                  <span>Selected</span>
+                  <strong>{selectedPost.postName || "Untitled"}</strong>
                 </div>
 
-                <div className="sidebar-cta-stack">
-                  <button
-                    type="button"
-                    className="sidebar-view-cta"
-                    onClick={() => openArchiveViewer(selectedPost)}
-                  >
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                    <span>{getActionButtonText(selectedPostMeta?.kind)}</span>
-                  </button>
-
-                  <a
-                    className="sidebar-download-cta"
-                    href={getDownloadUrl(selectedPost.searchTitle)}
-                  >
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
-                    <span>Download File</span>
-                  </a>
+                <div className="meta-row">
+                  <span>Type</span>
+                  <strong>{selectedPostMeta?.label || "Unknown"}</strong>
                 </div>
-              </>
+
+                <div className="meta-row">
+                  <span>Date</span>
+                  <strong>
+                    {formatDate(selectedPost.postDate) || "Unknown"}
+                  </strong>
+                </div>
+              </div>
+            )}
+
+            {selectedPost && (
+              <div className="sidebar-cta-stack">
+                <button
+                  type="button"
+                  className="sidebar-view-cta"
+                  onClick={() => openArchiveViewer(selectedPost)}
+                >
+                  View Contents
+                </button>
+
+                <a
+                  className="sidebar-download-cta"
+                  href={getDownloadUrl(selectedPost.searchTitle)}
+                  download
+                >
+                  Download Full File
+                </a>
+              </div>
             )}
           </div>
 
@@ -1573,12 +1507,12 @@ function App() {
 
             <div className="stat-card stat-current">
               <span>Current</span>
-              <strong>{totalCurrentCount}</strong>
+              <strong>{totalCurrent}</strong>
             </div>
 
             <div className="stat-card stat-deprecated">
               <span>Deprecated</span>
-              <strong>{totalDeprecatedCount}</strong>
+              <strong>{totalDeprecated}</strong>
             </div>
           </div>
         </aside>
@@ -1586,114 +1520,104 @@ function App() {
         <section className="downloads-section">
           <div className="downloads-header">
             <div>
-              <h2>Releases & Archives</h2>
-              <p>
-                Download up-to-date database packages or browse legacy builds.
-              </p>
+              <h2>Available Downloads</h2>
+              <p>Browse the latest files and archived versions.</p>
             </div>
 
             <button
+              type="button"
               className="refresh-button"
               onClick={loadPosts}
               disabled={loading}
             >
               <svg
-                className={loading ? "spin" : ""}
-                width="14"
-                height="14"
+                width="15"
+                height="15"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2.3"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                className={loading ? "spin" : ""}
               >
-                <polyline points="23 4 23 10 17 10" />
-                <polyline points="1 20 1 14 7 14" />
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                <path d="M20 7v5h-5" />
+                <path d="M4 17v-5h5" />
+                <path d="M5.6 9a7 7 0 0 1 11.6-2L20 12" />
+                <path d="M4 12l2.8 5a7 7 0 0 0 11.6-2" />
               </svg>
-              <span>{loading ? "Syncing..." : "Refresh"}</span>
+              Refresh
             </button>
           </div>
 
           <div className="search-bar">
             <svg
               className="search-icon"
-              width="16"
-              height="16"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2.2"
+              strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
               <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              <path d="m21 21-4.35-4.35" />
             </svg>
 
             <input
               type="text"
-              placeholder="Filter archives by name..."
+              placeholder="Search downloads..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
 
-            {search && <button onClick={() => setSearch("")}>Clear</button>}
+            {search && (
+              <button type="button" onClick={() => setSearch("")}>
+                Clear
+              </button>
+            )}
           </div>
 
-          <div className="downloads-list">
-            {loading && (
-              <div className="skeleton-container">
-                <div className="skeleton-row"></div>
-                <div className="skeleton-row"></div>
-                <div className="skeleton-row"></div>
-              </div>
-            )}
+          {error && <div className="error-banner">{error}</div>}
 
-            {!loading && error && (
-              <div className="message error">
-                <strong>Unable to reach repository server</strong>
-                <p>{error}</p>
-                <button onClick={loadPosts}>Retry Connection</button>
-              </div>
-            )}
-
-            {!loading && !error && filteredPosts.length === 0 && (
-              <div className="message">
-                <strong>No archives found</strong>
-                <p>
-                  {search
-                    ? `No files matched "${search}". Try clearing your search filter.`
-                    : "No downloadable files are currently published in this repository."}
-                </p>
-              </div>
-            )}
-
-            {!loading && !error && currentPosts.length > 0 && (
-              <div className="version-group">
+          {loading ? (
+            <div className="skeleton-container">
+              <div className="skeleton-row" />
+              <div className="skeleton-row" />
+              <div className="skeleton-row" />
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="empty-state">
+              <h3>No downloads available</h3>
+              <p>There are currently no files in the repository.</p>
+            </div>
+          ) : (
+            <div className="downloads-list">
+              <section className="version-group">
                 <button
+                  type="button"
                   className="group-header"
-                  onClick={() => setCurrentOpen(!currentOpen)}
+                  onClick={() => setCurrentOpen((prev) => !prev)}
                 >
-                  <div className="group-header-left">
-                    <span className="group-indicator current"></span>
-                    <span>Current Releases</span>
-                    <span className="group-count">{currentPosts.length}</span>
-                  </div>
-                  <span
-                    className={`group-chevron ${currentOpen ? "open" : ""}`}
-                  >
-                    <span className="group-chevron-text">
-                      {currentOpen ? "Collapse" : "Expand"}
+                  <span className="group-header-left">
+                    <span className="group-indicator current" />
+                    Current Versions
+                    <span className="group-count">
+                      {filteredCurrentPosts.length}
                     </span>
+                  </span>
+
+                  <span className={`group-chevron ${currentOpen ? "open" : ""}`}>
+                    {currentOpen ? "Collapse" : "Expand"}
                     <svg
                       width="14"
                       height="14"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2.2"
+                      strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     >
@@ -1701,298 +1625,169 @@ function App() {
                     </svg>
                   </span>
                 </button>
+
                 {currentOpen && (
                   <div className="group-content">
-                    {currentPosts.map((post, idx) => renderFileRow(post, idx))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {!loading && !error && deprecatedPosts.length > 0 && (
-              <div className="version-group">
-                <button
-                  className="group-header"
-                  onClick={() => setDeprecatedOpen(!deprecatedOpen)}
-                >
-                  <div className="group-header-left">
-                    <span className="group-indicator deprecated"></span>
-                    <span>Deprecated Releases</span>
-                    <span className="group-count">
-                      {deprecatedPosts.length}
-                    </span>
-                  </div>
-                  <span
-                    className={`group-chevron ${deprecatedOpen ? "open" : ""}`}
-                  >
-                    <span className="group-chevron-text">
-                      {deprecatedOpen ? "Collapse" : "Expand"}
-                    </span>
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </span>
-                </button>
-                {deprecatedOpen && (
-                  <div className="group-content">
-                    {deprecatedPosts.map((post, idx) =>
-                      renderFileRow(post, idx),
+                    {filteredCurrentPosts.length ? (
+                      filteredCurrentPosts.map(renderPost)
+                    ) : (
+                      <div className="empty-state compact">
+                        <p>No current versions match your search.</p>
+                      </div>
                     )}
                   </div>
                 )}
-              </div>
-            )}
-          </div>
+              </section>
 
-          <div className="downloads-footer">
-            <span>
-              Showing {filteredPosts.length} of {posts.length} archives
-            </span>
-            <span>Endpoint: db.yurphagames.net</span>
-          </div>
-        </section>
-      </main>
+              <section className="version-group">
+                <button
+                  type="button"
+                  className="group-header"
+                  onClick={() => setDeprecatedOpen((prev) => !prev)}
+                >
+                  <span className="group-header-left">
+                    <span className="group-indicator deprecated" />
+                    Deprecated Versions
+                    <span className="group-count">
+                      {filteredDeprecatedPosts.length}
+                    </span>
+                  </span>
 
-      {/* Adaptive Viewer Modal: Single-File Theater OR Split ZIP Tree Explorer */}
-      {viewingPost && (
-        <div className="zip-modal-backdrop" onClick={closeViewer}>
-          <div
-            className={`zip-modal ${isSingleFileMode ? "single-file-modal" : ""}`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="zip-modal-header">
-              <div className="zip-modal-title">
-                {/* Mobile drawer button for ZIP archives */}
-                {!isSingleFileMode && !zipLoading && !zipError && (
-                  <button
-                    type="button"
-                    className={`mobile-tree-toggle ${mobileTreeOpen ? "active" : ""}`}
-                    onClick={() => setMobileTreeOpen((prev) => !prev)}
-                    aria-label="Toggle archive files"
+                  <span
+                    className={`group-chevron ${deprecatedOpen ? "open" : ""}`}
                   >
+                    {deprecatedOpen ? "Collapse" : "Expand"}
                     <svg
-                      width="15"
-                      height="15"
+                      width="14"
+                      height="14"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2.2"
+                      strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     >
-                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                      <polyline points="6 9 12 15 18 9" />
                     </svg>
-                    <span>Files ({totalFileCount})</span>
-                  </button>
-                )}
+                  </span>
+                </button>
 
-                <span
-                  className="zip-badge"
-                  style={
-                    isSingleFileMode && activeFileMeta
-                      ? {
-                          color: activeFileMeta.color,
-                          borderColor: `${activeFileMeta.color}55`,
-                          backgroundColor: `${activeFileMeta.color}18`,
-                        }
-                      : undefined
-                  }
-                >
-                  <span
-                    className="zip-badge-dot"
-                    style={
-                      isSingleFileMode && activeFileMeta
-                        ? {
-                            background: activeFileMeta.color,
-                            boxShadow: `0 0 8px ${activeFileMeta.color}`,
-                          }
-                        : undefined
-                    }
-                  ></span>
-                  {isSingleFileMode
-                    ? `${activeFileMeta?.badge || "FILE"} VIEWER`
-                    : "ARCHIVE EXPLORER"}
-                </span>
-                <h3>{viewingPost.postName || "File Viewer"}</h3>
-                {!zipLoading &&
-                  !zipError &&
-                  !isSingleFileMode &&
-                  zipFiles.length > 0 && (
-                    <span className="zip-summary-pill">
-                      {totalFileCount} {totalFileCount === 1 ? "file" : "files"}
-                      {totalFolderCount > 0
-                        ? ` • ${totalFolderCount} folders`
-                        : ""}
-                    </span>
-                  )}
+                {deprecatedOpen && (
+                  <div className="group-content">
+                    {filteredDeprecatedPosts.length ? (
+                      filteredDeprecatedPosts.map(renderPost)
+                    ) : (
+                      <div className="empty-state compact">
+                        <p>No deprecated versions match your search.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+        </section>
+      </main>
+
+      {viewingPost && (
+        <div className="viewer-overlay" onClick={closeViewer}>
+          <section
+            className="viewer-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className="viewer-header">
+              <div className="viewer-heading">
+                <span className="viewer-eyebrow">FILE VIEWER</span>
+                <h2>{viewingPost.postName || viewingPost.fileName || "File"}</h2>
+                <p>
+                  {isSingleFileMode ? "Standalone file" : "ZIP archive"} ·{" "}
+                  {formatDate(viewingPost.postDate) || "Unknown date"}
+                </p>
               </div>
 
-              <div className="zip-modal-actions">
+              <div className="viewer-header-actions">
                 <a
-                  className="download-button modal-download-btn"
+                  className="download-button"
                   href={getDownloadUrl(viewingPost.searchTitle)}
+                  download
                 >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
-                  </svg>
-                  <span className="modal-download-label">
-                    {isSingleFileMode ? "Download File" : "Download ZIP"}
-                  </span>
+                  Download Full File
                 </a>
+
                 <button
                   type="button"
-                  className="zip-close-btn"
+                  className="viewer-close"
                   onClick={closeViewer}
-                  title="Close (Esc)"
                   aria-label="Close viewer"
                 >
                   <svg
-                    width="16"
-                    height="16"
+                    width="20"
+                    height="20"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2.3"
+                    strokeWidth="2"
                     strokeLinecap="round"
-                    strokeLinejoin="round"
                   >
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
+                    <path d="M18 6 6 18M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-            </div>
+            </header>
 
-            {zipLoading && (
-              <div className="zip-status-box">
-                <div className="zip-loader-ring"></div>
-                <strong>Loading Stream...</strong>
-                <p>Fetching file from db.yurphagames.net</p>
+            {zipError && <div className="error-banner">{zipError}</div>}
+
+            {zipLoading ? (
+              <div className="viewer-loading">
+                <div className="loading-spinner" />
+                <p>Loading file information...</p>
               </div>
-            )}
-
-            {!zipLoading && zipError && (
-              <div className="zip-status-box error">
-                <div className="zip-error-icon">!</div>
-                <strong>Unable to Preview File</strong>
-                <p>{zipError}</p>
-              </div>
-            )}
-
-            {!zipLoading && !zipError && (
-              <div
-                className={`zip-explorer-body ${isSingleFileMode ? "single-pane" : ""}`}
-              >
-                {/* Mobile drawer backdrop */}
-                {!isSingleFileMode && mobileTreeOpen && (
-                  <div
-                    className="mobile-tree-backdrop"
-                    onClick={() => setMobileTreeOpen(false)}
-                  />
-                )}
-
-                {/* Directory tree sidebar (sticky left pane on desktop, slide-over drawer on mobile) */}
+            ) : (
+              <div className="viewer-body">
                 {!isSingleFileMode && (
                   <aside
-                    className={`zip-tree-sidebar ${mobileTreeOpen ? "mobile-open" : ""}`}
+                    className={`file-tree-panel ${mobileTreeOpen ? "mobile-open" : ""}`}
                   >
-                    <div className="zip-tree-mobile-header">
-                      <span>Archive Contents ({totalFileCount})</span>
+                    <div className="file-tree-header">
+                      <div>
+                        <strong>Explorer</strong>
+                        <span>{zipFiles.filter((file) => !file.isDir).length} files</span>
+                      </div>
+
                       <button
                         type="button"
-                        className="zip-tree-clear"
+                        className="mobile-tree-close"
                         onClick={() => setMobileTreeOpen(false)}
-                        aria-label="Close file tree"
+                        aria-label="Close file explorer"
                       >
-                        ✕
+                        ×
                       </button>
                     </div>
 
-                    <div className="zip-tree-search">
+                    <div className="tree-search">
                       <svg
-                        width="13"
-                        height="13"
+                        width="15"
+                        height="15"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth="2.3"
+                        strokeWidth="2"
+                        strokeLinecap="round"
                       >
                         <circle cx="11" cy="11" r="8" />
-                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        <path d="m21 21-4.35-4.35" />
                       </svg>
+
                       <input
                         type="text"
-                        placeholder="Filter files in archive..."
+                        placeholder="Filter files..."
                         value={treeFilter}
-                        onChange={(e) => setTreeFilter(e.target.value)}
+                        onChange={(event) => setTreeFilter(event.target.value)}
                       />
-                      {treeFilter && (
-                        <button
-                          type="button"
-                          onClick={() => setTreeFilter("")}
-                          className="zip-tree-clear"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
 
-                    <div className="zip-tree-scroll">
-                      {treeFilter.trim() ? (
-                        filteredZipFiles.length > 0 ? (
-                          filteredZipFiles.map((fileObj) => {
-                            const meta = getFileMeta(fileObj.path);
-                            const isSelected =
-                              activeFile?.path === fileObj.path;
-                            return (
-                              <button
-                                key={fileObj.path}
-                                type="button"
-                                className={`tree-item tree-search-result ${isSelected ? "active" : ""}`}
-                                onClick={() => selectZipFile(fileObj)}
-                              >
-                                <span
-                                  className="file-type-pill"
-                                  style={{
-                                    color: meta.color,
-                                    borderColor: `${meta.color}44`,
-                                    backgroundColor: `${meta.color}14`,
-                                  }}
-                                >
-                                  {meta.badge}
-                                </span>
-                                <span className="tree-search-path">
-                                  {fileObj.path}
-                                </span>
-                              </button>
-                            );
-                          })
-                        ) : (
-                          <div className="zip-tree-empty">
-                            No matching files
-                          </div>
-                        )
-                      ) : (
+                    <div className="file-tree">
+                      {fileTree.length ? (
                         fileTree.map((node) => (
                           <TreeNode
                             key={node.path}
@@ -2004,305 +1799,264 @@ function App() {
                             onSelectFile={selectZipFile}
                           />
                         ))
+                      ) : (
+                        <div className="tree-empty">
+                          No files match your search.
+                        </div>
                       )}
                     </div>
                   </aside>
                 )}
 
-                <div className="zip-code-pane">
-                  {activeFile ? (
-                    <>
-                      <div className="zip-file-topbar">
-                        <div className="zip-breadcrumbs">
-                          {activeFile.path
-                            .split("/")
-                            .map((segment, idx, arr) => (
-                              <span key={idx} className="crumb-segment">
-                                {idx > 0 && (
-                                  <span className="crumb-sep">/</span>
-                                )}
-                                <span
-                                  className={
-                                    idx === arr.length - 1
-                                      ? "crumb-file"
-                                      : "crumb-dir"
-                                  }
-                                >
-                                  {segment}
-                                </span>
-                              </span>
-                            ))}
-                        </div>
+                <div className="file-preview-panel">
+                  <div className="preview-toolbar">
+                    <div className="preview-file-info">
+                      {!isSingleFileMode && (
+                        <button
+                          type="button"
+                          className="mobile-tree-toggle"
+                          onClick={() => setMobileTreeOpen(true)}
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          >
+                            <path d="M3 6h18M3 12h18M3 18h18" />
+                          </svg>
+                          Files
+                        </button>
+                      )}
 
-                        <div className="zip-file-controls">
-                          {/* Rendered vs Raw .md Toggle */}
-                          {activeKind === "markdown" && (
-                            <div
-                              className="md-mode-toggle"
-                              role="group"
-                              aria-label="Markdown view mode"
-                            >
+                      {activeFile ? (
+                        <>
+                          <span
+                            className="preview-type-badge"
+                            style={{
+                              color: activeFileMeta?.color,
+                              borderColor: `${activeFileMeta?.color}55`,
+                              background: `${activeFileMeta?.color}14`,
+                            }}
+                          >
+                            {activeFileMeta?.badge}
+                          </span>
+
+                          <div className="preview-file-name">
+                            <strong>{activeFile.path.split("/").pop()}</strong>
+                            <span>{activeFile.path}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="preview-file-name">
+                          <strong>Select a file</strong>
+                          <span>Choose an entry from the explorer.</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="preview-actions">
+                      {activeFile && (
+                        <>
+                          {activeFileKind === "markdown" && (
+                            <div className="markdown-mode-toggle">
                               <button
                                 type="button"
-                                className={`md-toggle-btn ${mdViewMode === "preview" ? "active" : ""}`}
+                                className={mdViewMode === "preview" ? "active" : ""}
                                 onClick={() => setMdViewMode("preview")}
                               >
-                                Rendered
+                                Preview
                               </button>
+
                               <button
                                 type="button"
-                                className={`md-toggle-btn ${mdViewMode === "raw" ? "active" : ""}`}
+                                className={mdViewMode === "raw" ? "active" : ""}
                                 onClick={() => setMdViewMode("raw")}
                               >
-                                Raw .md
+                                Raw
                               </button>
                             </div>
                           )}
 
-                          {activeFileMeta && (
-                            <span
-                              className="zip-lang-tag"
-                              style={{ color: activeFileMeta.color }}
-                            >
-                              {activeFileMeta.label}
-                            </span>
-                          )}
-
-                          {isTextLike && (
-                            <span className="zip-stat-pill">
-                              {highlightedLines.length} lines
-                            </span>
-                          )}
-
-                          {activeFile.size !== null && (
-                            <span className="zip-stat-pill">
-                              {formatBytes(activeFile.size)}
-                            </span>
-                          )}
-
-                          {activeKind === "image" && (
-                            <div className="image-zoom-controls">
+                          {activeFileKind === "image" && (
+                            <>
                               <button
                                 type="button"
-                                className="zip-copy-btn"
                                 onClick={() =>
-                                  setImageZoom((z) =>
-                                    Math.max(0.25, +(z - 0.25).toFixed(2)),
+                                  setImageZoom((prev) =>
+                                    Math.max(0.25, prev - 0.25),
                                   )
                                 }
-                                title="Zoom out"
                               >
                                 −
                               </button>
-                              <span className="zip-stat-pill">
-                                {Math.round(imageZoom * 100)}%
-                              </span>
+
+                              <span>{Math.round(imageZoom * 100)}%</span>
+
                               <button
                                 type="button"
-                                className="zip-copy-btn"
                                 onClick={() =>
-                                  setImageZoom((z) =>
-                                    Math.min(4, +(z + 0.25).toFixed(2)),
+                                  setImageZoom((prev) =>
+                                    Math.min(4, prev + 0.25),
                                   )
                                 }
-                                title="Zoom in"
                               >
                                 +
                               </button>
+
                               <button
                                 type="button"
-                                className="zip-copy-btn"
-                                onClick={() => setImageCheckerBg((v) => !v)}
-                                title="Toggle transparency grid"
+                                onClick={() =>
+                                  setImageCheckerBg((prev) => !prev)
+                                }
                               >
-                                Grid
+                                Background
                               </button>
-                            </div>
+                            </>
                           )}
 
-                          {isTextLike && (
-                            <button
-                              type="button"
-                              className={`zip-copy-btn ${copied ? "copied" : ""}`}
-                              onClick={() => {
-                                navigator.clipboard.writeText(fileContent);
-                                setCopied(true);
-                                setTimeout(() => setCopied(false), 1800);
-                              }}
-                            >
-                              {copied ? "Copied!" : "Copy"}
-                            </button>
-                          )}
-
-                          {!isSingleFileMode && (
-                            <button
-                              type="button"
-                              className="zip-copy-btn"
-                              onClick={() => downloadSingleEntry(activeFile)}
-                              title="Download only this file"
-                            >
-                              Save File
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="zip-code-scroll">
-                        {fileContentLoading ? (
-                          <div className="zip-status-box">
-                            <div className="zip-loader-ring small"></div>
-                            <p>Rendering preview...</p>
-                          </div>
-                        ) : activeKind === "image" && mediaPreviewUrl ? (
-                          <div
-                            className={`zip-image-preview ${imageCheckerBg ? "checkerboard" : ""}`}
+                          <button
+                            type="button"
+                            className="download-button secondary"
+                            onClick={() => downloadSingleEntry(activeFile)}
                           >
-                            <img
-                              src={mediaPreviewUrl}
-                              alt={activeFile.path}
-                              style={{ transform: `scale(${imageZoom})` }}
-                            />
-                          </div>
-                        ) : activeKind === "video" && mediaPreviewUrl ? (
-                          <div className="zip-media-stage">
-                            <div className="zip-video-frame">
-                              <video
-                                key={mediaPreviewUrl}
-                                src={mediaPreviewUrl}
-                                controls
-                                playsInline
-                                preload="metadata"
-                              />
-                            </div>
-                            <div className="media-caption">
-                              {activeFile.path.split("/").pop()} •{" "}
-                              {formatBytes(activeFile.size)}
-                            </div>
-                          </div>
-                        ) : activeKind === "audio" && mediaPreviewUrl ? (
-                          <div className="zip-media-stage">
-                            <div className="zip-audio-card">
-                              <div
-                                className="audio-visualizer-bars"
-                                aria-hidden="true"
-                              >
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                              </div>
-                              <div className="audio-track-info">
-                                <strong>
-                                  {activeFile.path.split("/").pop()}
-                                </strong>
-                                <span>
-                                  {activeFileMeta?.label} •{" "}
-                                  {formatBytes(activeFile.size)}
-                                </span>
-                              </div>
-                              <audio
-                                key={mediaPreviewUrl}
-                                src={mediaPreviewUrl}
-                                controls
-                                preload="metadata"
-                              />
-                            </div>
-                          </div>
-                        ) : activeKind === "pdf" && mediaPreviewUrl ? (
-                          <iframe
-                            key={mediaPreviewUrl}
+                            Download Entry
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="preview-content">
+                    {!activeFile ? (
+                      <div className="preview-placeholder">
+                        <svg
+                          width="46"
+                          height="46"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.3"
+                        >
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <path d="M14 2v6h6M8 13h8M8 17h8" />
+                        </svg>
+                        <h3>No file selected</h3>
+                        <p>Select a file from the explorer to preview it.</p>
+                      </div>
+                    ) : fileContentLoading ? (
+                      <div className="viewer-loading">
+                        <div className="loading-spinner" />
+                        <p>Loading selected file...</p>
+                      </div>
+                    ) : activeFileKind === "image" ? (
+                      <div
+                        className={`image-preview ${imageCheckerBg ? "checkerboard" : ""}`}
+                      >
+                        {mediaPreviewUrl ? (
+                          <img
                             src={mediaPreviewUrl}
-                            title={activeFile.path}
-                            className="zip-pdf-frame"
-                          />
-                        ) : activeKind === "binary" ? (
-                          <div className="zip-binary-card">
-                            <div className="binary-badge">
-                              .{getExtension(activeFile.path).toUpperCase()}
-                            </div>
-                            <strong>Compiled / Binary Asset</strong>
-                            <p>
-                              This file contains raw binary data (
-                              {formatBytes(activeFile.size)}) and cannot be
-                              previewed directly.
-                            </p>
-                            <button
-                              type="button"
-                              className="download-button"
-                              onClick={() => downloadSingleEntry(activeFile)}
-                            >
-                              Download File
-                            </button>
-                          </div>
-                        ) : activeKind === "markdown" &&
-                          mdViewMode === "preview" ? (
-                          <article
-                            className="zip-markdown-body"
-                            dangerouslySetInnerHTML={{
-                              __html: renderedMarkdownHtml,
-                            }}
+                            alt={activeFile.path}
+                            style={{ transform: `scale(${imageZoom})` }}
                           />
                         ) : (
-                          <pre className="zip-code-block">
-                            <code>
-                              {highlightedLines.map((lineHtml, i) => (
-                                <div key={i} className="code-line">
-                                  <span className="line-number">{i + 1}</span>
-                                  <span
-                                    className="line-code"
-                                    dangerouslySetInnerHTML={{
-                                      __html: lineHtml || " ",
-                                    }}
-                                  />
-                                </div>
-                              ))}
-                            </code>
-                          </pre>
+                          <div className="preview-placeholder">
+                            <p>Unable to preview this image.</p>
+                          </div>
                         )}
                       </div>
-                    </>
-                  ) : (
-                    <div className="zip-status-box">
-                      <strong>No File Selected</strong>
-                      <p>
-                        Pick any file from the{" "}
-                        <button
-                          type="button"
-                          className="inline-link-btn"
-                          onClick={() => setMobileTreeOpen(true)}
+                    ) : activeFileKind === "video" ? (
+                      <div className="media-preview">
+                        {mediaPreviewUrl ? (
+                          <video src={mediaPreviewUrl} controls />
+                        ) : (
+                          <div className="preview-placeholder">
+                            <p>Unable to load this video.</p>
+                          </div>
+                        )}
+                      </div>
+                    ) : activeFileKind === "audio" ? (
+                      <div className="audio-preview">
+                        {mediaPreviewUrl ? (
+                          <audio src={mediaPreviewUrl} controls />
+                        ) : (
+                          <div className="preview-placeholder">
+                            <p>Unable to load this audio file.</p>
+                          </div>
+                        )}
+                      </div>
+                    ) : activeFileKind === "pdf" ? (
+                      <div className="pdf-preview">
+                        {mediaPreviewUrl ? (
+                          <iframe
+                            src={mediaPreviewUrl}
+                            title={activeFile.path}
+                          />
+                        ) : (
+                          <div className="preview-placeholder">
+                            <p>Unable to load this PDF.</p>
+                          </div>
+                        )}
+                      </div>
+                    ) : activeFileKind === "binary" ? (
+                      <div className="preview-placeholder">
+                        <svg
+                          width="46"
+                          height="46"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.3"
                         >
-                          archive file list
-                        </button>{" "}
-                        to inspect or play it.
-                      </p>
-                    </div>
-                  )}
+                          <path d="M12 2 3 7v10l9 5 9-5V7z" />
+                          <path d="m3 7 9 5 9-5M12 22V12" />
+                        </svg>
+                        <h3>Binary file</h3>
+                        <p>
+                          This file cannot be previewed as text. You can
+                          download the original entry.
+                        </p>
+                      </div>
+                    ) : activeFileKind === "markdown" &&
+                      mdViewMode === "preview" ? (
+                      <article
+                        className="markdown-preview"
+                        dangerouslySetInnerHTML={{
+                          __html: renderedMarkdown,
+                        }}
+                      />
+                    ) : activeFileKind === "text" ||
+                      activeFileKind === "markdown" ? (
+                      <pre className="code-preview">
+                        <code
+                          dangerouslySetInnerHTML={{
+                            __html:
+                              activeFileKind === "markdown"
+                                ? Prism.highlight(
+                                    fileContent || "",
+                                    Prism.languages.markdown ||
+                                      Prism.languages.none,
+                                    "markdown",
+                                  )
+                                : renderedCode,
+                          }}
+                        />
+                      </pre>
+                    ) : (
+                      <div className="preview-placeholder">
+                        <p>This file type cannot be previewed.</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
-          </div>
+          </section>
         </div>
       )}
-
-      <footer className="footer">
-        <span>DB Downloader — Yurpha Games DB - v0.1.5</span>
-
-        <div className="footer-links">
-          {SOCIAL_LINKS.map((link) => (
-            <a
-              key={link.url}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {link.label}
-            </a>
-          ))}
-        </div>
-      </footer>
     </div>
   );
 }

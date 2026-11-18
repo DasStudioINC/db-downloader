@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import JSZip from "jszip";
 import Prism from "prismjs";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
@@ -22,7 +21,6 @@ import "prismjs/components/prism-xml-doc";
 
 import "./App.css";
 
-// Configure marked to use Prism for fenced code blocks inside Markdown
 marked.setOptions({
   breaks: true,
   gfm: true,
@@ -540,7 +538,6 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
   const bytes = new Uint8Array(arrayBuffer);
   const ct = (contentTypeHeader || "").toLowerCase();
 
-  // 1. ZIP: PK\x03\x04
   if (
     bytes[0] === 0x50 &&
     bytes[1] === 0x4b &&
@@ -549,7 +546,6 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
     return { isZip: true, ext: "zip", mime: "application/zip" };
   }
 
-  // 2. Images
   if (
     bytes[0] === 0x89 &&
     bytes[1] === 0x50 &&
@@ -577,7 +573,6 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
     return { isZip: false, ext: "webp", mime: "image/webp" };
   }
 
-  // 3. Videos
   if (
     bytes[4] === 0x66 &&
     bytes[5] === 0x74 &&
@@ -595,7 +590,6 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
     return { isZip: false, ext: "webm", mime: "video/webm" };
   }
 
-  // 4. Audio
   if (
     (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) ||
     (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0)
@@ -631,7 +625,6 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
     return { isZip: false, ext: "flac", mime: "audio/flac" };
   }
 
-  // 5. PDF
   if (
     bytes[0] === 0x25 &&
     bytes[1] === 0x50 &&
@@ -641,7 +634,6 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
     return { isZip: false, ext: "pdf", mime: "application/pdf" };
   }
 
-  // 6. Non-ZIP archives / Windows EXE
   if (bytes[0] === 0x52 && bytes[1] === 0x61 && bytes[2] === 0x72) {
     return {
       isZip: false,
@@ -662,7 +654,6 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
     return { isZip: false, ext: "exe", mime: "application/x-msdownload" };
   }
 
-  // 7. Fall back to Content-Type header or post metadata
   if (ct.includes("video/"))
     return { isZip: false, ext: "mp4", mime: ct.split(";")[0] };
   if (ct.includes("audio/"))
@@ -674,7 +665,6 @@ function detectResponseFormat(arrayBuffer, contentTypeHeader, post) {
   if (ct.includes("markdown"))
     return { isZip: false, ext: "md", mime: "text/markdown" };
 
-  // 8. Check if it's readable UTF-8 text / JSON / Markdown
   const sample = new TextDecoder("utf-8", { fatal: false }).decode(
     bytes.slice(0, 2048),
   );
@@ -850,7 +840,6 @@ function App() {
   const [currentOpen, setCurrentOpen] = useState(true);
   const [deprecatedOpen, setDeprecatedOpen] = useState(false);
 
-  // Archive / Standalone File Viewer State
   const [viewingPost, setViewingPost] = useState(null);
   const [isSingleFileMode, setIsSingleFileMode] = useState(false);
   const [zipLoading, setZipLoading] = useState(false);
@@ -866,10 +855,7 @@ function App() {
   const [fileContentLoading, setFileContentLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Markdown view mode: "preview" | "raw"
   const [mdViewMode, setMdViewMode] = useState("preview");
-
-  // Mobile drawer state for ZIP file tree
   const [mobileTreeOpen, setMobileTreeOpen] = useState(false);
 
   async function loadPosts() {
@@ -910,7 +896,6 @@ function App() {
     loadPosts();
   }, []);
 
-  // Lock background scroll & handle Escape key while modal is open
   useEffect(() => {
     if (!viewingPost) return;
 
@@ -937,6 +922,14 @@ function App() {
     return `${API_URL}/search/${encodeURIComponent(searchTitle)}/post`;
   }
 
+  function getZipTreeUrl(searchTitle) {
+    return `${API_URL}/search/${encodeURIComponent(searchTitle)}/zip/tree`;
+  }
+
+  function getZipFileUrl(searchTitle, path) {
+    return `${API_URL}/search/${encodeURIComponent(searchTitle)}/zip/file?path=${encodeURIComponent(path)}`;
+  }
+
   function clearMediaUrl() {
     setMediaPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev);
@@ -960,26 +953,33 @@ function App() {
     setExpandedDirs({});
 
     try {
-      const response = await fetch(getDownloadUrl(post.searchTitle));
-      if (!response.ok) {
-        throw new Error(`Failed to fetch file (HTTP ${response.status})`);
-      }
+      const postMeta = getPostDisplayMeta(post);
 
-      const arrayBuffer = await response.arrayBuffer();
-      const detected = detectResponseFormat(
-        arrayBuffer,
-        response.headers.get("content-type"),
-        post,
-      );
+      if (postMeta.kind !== "zip") {
+        const response = await fetch(getDownloadUrl(post.searchTitle));
+        if (!response.ok) {
+          throw new Error(`Failed to fetch file (HTTP ${response.status})`);
+        }
 
-      if (detected.unsupportedArchive) {
-        throw new Error(
-          `This item is a ${detected.unsupportedArchive} (${formatBytes(arrayBuffer.byteLength)}), which cannot be unpacked in the browser. Use the Download button instead.`,
+        const arrayBuffer = await response.arrayBuffer();
+        const detected = detectResponseFormat(
+          arrayBuffer,
+          response.headers.get("content-type"),
+          post,
         );
-      }
 
-      // STANDALONE FILE MODE
-      if (!detected.isZip) {
+        if (detected.unsupportedArchive) {
+          throw new Error(
+            `This item is a ${detected.unsupportedArchive} (${formatBytes(arrayBuffer.byteLength)}), which cannot be previewed in the browser. Use the Download button instead.`,
+          );
+        }
+
+        if (detected.isZip) {
+          throw new Error(
+            "The file is a ZIP archive, but its archive listing could not be determined from the post metadata.",
+          );
+        }
+
         setIsSingleFileMode(true);
         const baseName = (post.fileName || post.postName || "file").replace(
           /\.[^/.]+$/,
@@ -990,7 +990,7 @@ function App() {
           path: virtualPath,
           isDir: false,
           size: arrayBuffer.byteLength,
-          entry: null,
+          compressedSize: null,
           rawBuffer: arrayBuffer,
           mime: detected.mime,
         };
@@ -1021,36 +1021,47 @@ function App() {
         return;
       }
 
-      // ZIP ARCHIVE MODE
-      setIsSingleFileMode(false);
-      const zip = await JSZip.loadAsync(arrayBuffer);
-      const entries = [];
+      const response = await fetch(getZipTreeUrl(post.searchTitle));
+      if (!response.ok) {
+        throw new Error(
+          `Failed to load archive file list (HTTP ${response.status})`,
+        );
+      }
+
+      const treeData = await response.json();
+      if (!Array.isArray(treeData)) {
+        throw new Error("The server returned an invalid ZIP file listing.");
+      }
+
+      const entries = treeData.map((item) => ({
+        path: item.path,
+        isDir: Boolean(item.directory),
+        size: item.size ?? null,
+        compressedSize: item.compressedSize ?? null,
+      }));
+
       const initialExpanded = {};
-
-      zip.forEach((relativePath, zipEntry) => {
-        entries.push({
-          path: relativePath,
-          isDir: zipEntry.dir,
-          size: zipEntry._data?.uncompressedSize ?? null,
-          entry: zipEntry,
-        });
-
-        const parts = relativePath.split("/").filter(Boolean);
+      for (const entry of entries) {
+        if (entry.isDir) continue;
+        const parts = entry.path.split("/").filter(Boolean);
         if (parts.length > 1) {
           initialExpanded[parts[0]] = true;
         }
-      });
+      }
 
       setZipFiles(entries);
       setExpandedDirs(initialExpanded);
 
       const firstPreviewable =
-        entries.find((e) => !e.isDir && /readme/i.test(e.path)) ||
-        entries.find((e) => !e.isDir && getPreviewKind(e.path) !== "binary") ||
-        entries.find((e) => !e.isDir);
+        entries.find((entry) => !entry.isDir && /readme/i.test(entry.path)) ||
+        entries.find(
+          (entry) =>
+            !entry.isDir && getPreviewKind(entry.path) !== "binary",
+        ) ||
+        entries.find((entry) => !entry.isDir);
 
       if (firstPreviewable) {
-        await selectZipFile(firstPreviewable);
+        await selectZipFile(firstPreviewable, post.searchTitle);
       } else {
         setMobileTreeOpen(true);
       }
@@ -1061,37 +1072,45 @@ function App() {
     }
   }
 
-  async function selectZipFile(fileObj) {
+  async function selectZipFile(fileObj, searchTitle = viewingPost?.searchTitle) {
+    if (!fileObj || fileObj.isDir) return;
+
     setActiveFile(fileObj);
     setCopied(false);
     setImageZoom(1);
     setMdViewMode("preview");
     setMobileTreeOpen(false);
+    setFileContent("");
+    setFileContentLoading(false);
     clearMediaUrl();
 
-    if (!fileObj.entry) return;
-
-    const kind = getPreviewKind(fileObj.path);
-
-    if (
-      kind === "image" ||
-      kind === "video" ||
-      kind === "audio" ||
-      kind === "pdf"
-    ) {
-      setFileContentLoading(true);
-      try {
-        const rawBlob = await fileObj.entry.async("blob");
-        const typedBlob = new Blob([rawBlob], {
-          type: getMimeType(fileObj.path),
+    if (fileObj.rawBuffer) {
+      const kind = getPreviewKind(fileObj.path);
+      if (
+        kind === "image" ||
+        kind === "video" ||
+        kind === "audio" ||
+        kind === "pdf"
+      ) {
+        const blob = new Blob([fileObj.rawBuffer], {
+          type: fileObj.mime || getMimeType(fileObj.path),
         });
-        setMediaPreviewUrl(URL.createObjectURL(typedBlob));
-      } finally {
-        setFileContentLoading(false);
+        setMediaPreviewUrl(URL.createObjectURL(blob));
+      } else if (kind === "text" || kind === "markdown") {
+        let text = new TextDecoder("utf-8").decode(fileObj.rawBuffer);
+        if (getExtension(fileObj.path) === "json") {
+          try {
+            text = JSON.stringify(JSON.parse(text), null, 2);
+          } catch {
+            // Keep original formatting if not strict JSON
+          }
+        }
+        setFileContent(text);
       }
       return;
     }
 
+    const kind = getPreviewKind(fileObj.path);
     if (kind === "binary") {
       setFileContent("");
       return;
@@ -1099,17 +1118,37 @@ function App() {
 
     setFileContentLoading(true);
     try {
-      let text = await fileObj.entry.async("string");
-      if (getExtension(fileObj.path) === "json") {
-        try {
-          text = JSON.stringify(JSON.parse(text), null, 2);
-        } catch {
-          // Keep original formatting if not strict JSON
-        }
+      const response = await fetch(getZipFileUrl(searchTitle, fileObj.path));
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file (HTTP ${response.status})`);
       }
-      setFileContent(text);
-    } catch {
-      setFileContent("[Unable to decode file as UTF-8 text]");
+
+      if (
+        kind === "image" ||
+        kind === "video" ||
+        kind === "audio" ||
+        kind === "pdf"
+      ) {
+        const blob = await response.blob();
+        const typedBlob = new Blob([blob], {
+          type: getMimeType(fileObj.path),
+        });
+        setMediaPreviewUrl(URL.createObjectURL(typedBlob));
+      } else {
+        let text = await response.text();
+        if (getExtension(fileObj.path) === "json") {
+          try {
+            text = JSON.stringify(JSON.parse(text), null, 2);
+          } catch {
+            // Keep original formatting if not strict JSON
+          }
+        }
+        setFileContent(text);
+      }
+    } catch (err) {
+      setFileContent(
+        `Unable to load this file: ${err.message || "Unknown error"}`,
+      );
     } finally {
       setFileContentLoading(false);
     }
@@ -1119,15 +1158,19 @@ function App() {
     if (!fileObj) return;
     const filename = fileObj.path.split("/").pop() || "download";
     let blob;
-    if (fileObj.entry) {
-      const raw = await fileObj.entry.async("blob");
-      blob = new Blob([raw], { type: getMimeType(fileObj.path) });
-    } else if (fileObj.rawBuffer) {
+
+    if (fileObj.rawBuffer) {
       blob = new Blob([fileObj.rawBuffer], {
         type: fileObj.mime || getMimeType(fileObj.path),
       });
     } else {
-      return;
+      const response = await fetch(
+        getZipFileUrl(viewingPost.searchTitle, fileObj.path),
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to download file (HTTP ${response.status})`);
+      }
+      blob = await response.blob();
     }
 
     const url = URL.createObjectURL(blob);
@@ -1762,7 +1805,6 @@ function App() {
         </section>
       </main>
 
-      {/* Adaptive Viewer Modal: Single-File Theater OR Split ZIP Tree Explorer */}
       {viewingPost && (
         <div className="zip-modal-backdrop" onClick={closeViewer}>
           <div
@@ -1771,7 +1813,6 @@ function App() {
           >
             <div className="zip-modal-header">
               <div className="zip-modal-title">
-                {/* Mobile drawer button for ZIP archives */}
                 {!isSingleFileMode && !zipLoading && !zipError && (
                   <button
                     type="button"
@@ -1903,7 +1944,6 @@ function App() {
               <div
                 className={`zip-explorer-body ${isSingleFileMode ? "single-pane" : ""}`}
               >
-                {/* Mobile drawer backdrop */}
                 {!isSingleFileMode && mobileTreeOpen && (
                   <div
                     className="mobile-tree-backdrop"
@@ -1911,7 +1951,6 @@ function App() {
                   />
                 )}
 
-                {/* Directory tree sidebar (sticky left pane on desktop, slide-over drawer on mobile) */}
                 {!isSingleFileMode && (
                   <aside
                     className={`zip-tree-sidebar ${mobileTreeOpen ? "mobile-open" : ""}`}
@@ -2035,7 +2074,6 @@ function App() {
                         </div>
 
                         <div className="zip-file-controls">
-                          {/* Rendered vs Raw .md Toggle */}
                           {activeKind === "markdown" && (
                             <div
                               className="md-mode-toggle"
